@@ -647,7 +647,7 @@ class SeekDialog(kodigui.BaseDialog):
 
                     elif action == xbmcgui.ACTION_MOVE_DOWN:
                         # pressing down with the OSD open and chapters available
-                        if (self.showChapters and
+                        if (self.showChapters and self.clientLikePlex and
                                 (self.previousFocusID not in (controlID, self.MAIN_BUTTON_ID, self.BIG_SEEK_LIST_ID))):
                             self.setProperty('show.chapters', '1')
                             self.setFocusId(self.BIG_SEEK_LIST_ID)
