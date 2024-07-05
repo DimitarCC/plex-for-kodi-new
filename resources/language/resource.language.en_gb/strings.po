@@ -94,11 +94,11 @@ msgid "Debug Logging"
 msgstr ""
 
 msgctxt "#32025"
-msgid "Allow Direct Play"
+msgid "Direct Play"
 msgstr ""
 
 msgctxt "#32026"
-msgid "Allow Direct Stream"
+msgid "Direct Stream"
 msgstr ""
 
 msgctxt "#32027"
@@ -138,11 +138,11 @@ msgid "Always"
 msgstr ""
 
 msgctxt "#32036"
-msgid "Allow 4K"
+msgid "4K"
 msgstr ""
 
 msgctxt "#32037"
-msgid "Allow HEVC (h265)"
+msgid "HEVC (h265)"
 msgstr ""
 
 msgctxt "#32038"
@@ -1143,7 +1143,7 @@ msgid "Ends at"
 msgstr ""
 
 msgctxt "#32601"
-msgid "Allow AV1"
+msgid "AV1"
 msgstr ""
 
 msgctxt "#32602"
@@ -1563,7 +1563,7 @@ msgid "Only for Episodes/Playlists"
 msgstr ""
 
 msgctxt "#32939"
-msgid "Only applies to video player UI"
+msgid "User-specific.\nOnly applies to video player UI"
 msgstr ""
 
 msgctxt "#32940"
@@ -1711,7 +1711,7 @@ msgid "Adaptive"
 msgstr ""
 
 msgctxt "#32977"
-msgid "Allow VC1"
+msgid "VC1"
 msgstr ""
 
 msgctxt "#32978"
@@ -1735,11 +1735,11 @@ msgid "Depending on how many cores your CPU has and how much it can handle, incr
 msgstr ""
 
 msgctxt "#32983"
-msgid "Player Theme"
+msgid "Theme"
 msgstr ""
 
 msgctxt "#32984"
-msgid "Sets the player theme. Currently only customizes the playback control buttons. ATTENTION: [I]Might[/I] need an addon restart.\nIn order to customize this, copy one of the xml's in script.plexmod/resources/skins/Main/1080i/templates to addon_data/script.plexmod/templates/seek_dialog_buttons_custom.xml and adjust it to your liking, then select \"Custom\" as your theme."
+msgid "Sets the theme. Currently only customizes all control buttons. ATTENTION: [I]Might[/I] need an addon restart.\nIn order to customize this, copy one of the xml's in script.plexmod/resources/skins/Main/1080i/templates to addon_data/script.plexmod/templates/{templatename}_custom.xml and adjust it to your liking, then select \"Custom\" as your theme."
 msgstr ""
 
 msgctxt "#32985"
@@ -1867,11 +1867,11 @@ msgid "When checking for plex.direct host mapping, ignore local Docker IPv4 addr
 msgstr ""
 
 msgctxt "#33016"
-msgid "Allow TV spoilers for specific genres"
+msgid "Allow TV spoilers for"
 msgstr ""
 
 msgctxt "#33017"
-msgid "Overrides the above for: {}"
+msgid "Overrides the above for specific genres. Default: Reality, Game Show, Documentary, Sport"
 msgstr ""
 
 msgctxt "#33018"
@@ -1987,7 +1987,7 @@ msgid "Behave like official Plex clients"
 msgstr ""
 
 msgctxt "#33046"
-msgid "When pressing up/down while the OSD isn't shown, show OSD instead of skipping chapters."
+msgid "When pressing up/down while the OSD isn't shown, show OSD instead of skipping chapters. Additionally, when pressing down while the OSD is shown, open the chapters (if available)."
 msgstr ""
 
 msgctxt "#33047"
@@ -2032,4 +2032,20 @@ msgstr ""
 
 msgctxt "#33057"
 msgid "Show buttons"
+msgstr ""
+
+msgctxt "#33058"
+msgid "Playback features"
+msgstr ""
+
+msgctxt "#33059"
+msgid "Additional codecs"
+msgstr ""
+
+msgctxt "#33060"
+msgid "{feature_ds}: {desc_ds}\n{feature_4k}: {desc_4k}"
+msgstr ""
+
+msgctxt "#33061"
+msgid "Enable certain codecs if your hardware supports them. Disable them to force transcoding."
 msgstr ""

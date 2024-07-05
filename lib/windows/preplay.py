@@ -550,6 +550,7 @@ class PrePlayWindow(kodigui.ControlledWindow, windowutils.UtilMixin, RatingsMixi
             self.setProperty('related.header', T(32306, 'Related Shows'))
         elif self.video.type == 'movie':
             self.setProperty('title', self.video.defaultTitle)
+            self.setProperty('edition', self.video.defaultEdition)
             self.setProperty('preview', '')
             self.setProperty('thumb', self.video.thumb.asTranscodedImageURL(*self.THUMB_POSTER_DIM))
             genres = u' / '.join([g.tag for g in self.video.genres()][:3])

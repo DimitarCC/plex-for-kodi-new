@@ -129,6 +129,15 @@ class PlexInterface(plexapp.AppInterface):
         else:
             return util.getSetting(pref, default)
 
+    def getPlaybackFeatures(self):
+        return self.getPreference("playback_features",
+                                  ["playback_directplay",
+                                   "playback_remux",
+                                   "allow_4k"])
+
+    def getAdditionalCodecs(self):
+        return self.getPreference("allowed_codecs", ["allow_hevc", "allow_vc1"])
+
     def getManualConnections(self):
         conns = []
         for i in range(2):
@@ -165,7 +174,8 @@ class PlexInterface(plexapp.AppInterface):
 
     def getGlobal(self, glbl, default=None):
         if glbl == 'transcodeVideoResolutions':
-            maxres = self.getPreference('allow_4k', True) and plexapp.Res((3840, 2160)) or plexapp.Res((1920, 1080))
+            allow_4k = "allow_4k" in self.getPlaybackFeatures()
+            maxres = allow_4k and plexapp.Res((3840, 2160)) or plexapp.Res((1920, 1080))
             self._globals['transcodeVideoResolutions'][-5:] = [maxres] * 5
         elif glbl == 'audioChannels':
             try:
@@ -238,7 +248,7 @@ class PlexInterface(plexapp.AppInterface):
         qualityIndex = self.getQualityIndex(quality_type)
 
         if qualityIndex >= 9:
-            if self.getPreference('allow_4k', True):
+            if "allow_4k" in self.getPlaybackFeatures():
                 return allow4k and 2160 or 1088
             else:
                 return 1088

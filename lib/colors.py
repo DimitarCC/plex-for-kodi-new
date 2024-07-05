@@ -1,6 +1,7 @@
 # Constants
 Background = 'FF111111'
 BackgroundDark = 'FF0A0A0A'
+BackgroundVeryDark = 'FF000000'
 
 #  OverlayVeryDark = GetAlpha(FF000000, 90),
 #  OverlayDark = GetAlpha(FF000000, 70),

@@ -70,7 +70,8 @@ class PlexPlayer(BasePlayer):
         self.decision = decision
 
     def build(self, forceTranscode=False):
-        if self.item.settings.getPreference("playback_directplay", True):
+        features = self.item.settings.getPlaybackFeatures()
+        if "playback_directplay" in features:
             directPlayPref = self.item.settings.getPreference("playback_directplay_force", False) and 'forced' or 'allow'
         else:
             directPlayPref = 'disabled'
@@ -80,7 +81,7 @@ class PlexPlayer(BasePlayer):
         else:
             directPlay = directPlayPref == "forced" and True or None
 
-        return self._build(directPlay, self.item.settings.getPreference("playback_remux", True))
+        return self._build(directPlay, "playback_remux" in features)
 
     def _build(self, directPlay=None, directStream=True, currentPartIndex=None):
         isForced = directPlay is not None
@@ -349,6 +350,7 @@ class PlexPlayer(BasePlayer):
 
         obj.subtitleUrl = None
 
+        video_codecs = self.item.settings.getAdditionalCodecs()
         clampToOrig = self.item.settings.getPreference("audio_clamp_to_orig", True)
         useKodiAudio = self.item.settings.getPreference("audio_channels_kodi", False)
         AC3Cond = self.item.settings.getPreference("audio_force_ac3_cond", 'never')
@@ -510,7 +512,7 @@ class PlexPlayer(BasePlayer):
                 "name=audio.samplingRate&value=22050&isRequired=false)")
 
         # HEVC
-        if self.item.settings.getPreference("allow_hevc", True):
+        if "allow_hevc" in video_codecs:
             builder.extras.append(
                 "append-transcode-target-codec(type=videoProfile&context=streaming&container=mkv&"
                 "protocol=http&videoCodec=hevc)")
@@ -526,7 +528,7 @@ class PlexPlayer(BasePlayer):
             #     "add-direct-play-profile(type=videoProfile&videoCodec=vp9&container=*&audioCodec=*)")
 
         # AV1
-        if self.item.settings.getPreference("allow_av1", False):
+        if "allow_av1" in video_codecs:
             builder.extras.append(
                 "append-transcode-target-codec(type=videoProfile&context=streaming&container=mkv&"
                 "protocol=http&videoCodec=av1)")
@@ -534,7 +536,7 @@ class PlexPlayer(BasePlayer):
             #     "add-direct-play-profile(type=videoProfile&videoCodec=av1&container=*&audioCodec=*)")
 
         # VC1
-        if self.item.settings.getPreference("allow_vc1", True):
+        if "allow_vc1" in video_codecs:
             builder.extras.append(
                 "append-transcode-target-codec(type=videoProfile&context=streaming&container=mkv&"
                 "protocol=http&videoCodec=vc1)")

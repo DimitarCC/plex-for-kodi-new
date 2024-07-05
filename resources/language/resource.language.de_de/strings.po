@@ -109,13 +109,13 @@ msgstr "Debug-Protokollierung"
 
 #: 
 msgctxt "#32025"
-msgid "Allow Direct Play"
-msgstr "Direkte Wiedergabe erlauben"
+msgid "Direct Play"
+msgstr "Direkte Wiedergabe"
 
 #: 
 msgctxt "#32026"
-msgid "Allow Direct Stream"
-msgstr "Direktes Streamen erlauben"
+msgid "Direct Stream"
+msgstr "Direktes Streamen"
 
 #: 
 msgctxt "#32027"
@@ -159,13 +159,13 @@ msgstr "Immer"
 
 #: 
 msgctxt "#32036"
-msgid "Allow 4K"
-msgstr "4K erlauben"
+msgid "4K"
+msgstr "4K"
 
 #: 
 msgctxt "#32037"
-msgid "Allow HEVC (h265)"
-msgstr "HEVC erlauben (H265)"
+msgid "HEVC (h265)"
+msgstr "HEVC (H265)"
 
 #: 
 msgctxt "#32038"
@@ -1351,8 +1351,8 @@ msgstr "Endet um"
 
 #: 
 msgctxt "#32601"
-msgid "Allow AV1"
-msgstr "AV1 zulassen"
+msgid "AV1"
+msgstr "AV1"
 
 #: 
 msgctxt "#32602"
@@ -1937,8 +1937,8 @@ msgstr "Zeige Vorheriger/Nächster-Knopf"
 
 #: 
 msgctxt "#32939"
-msgid "Only applies to video player UI"
-msgstr "Gilt nur für die Video-Abspieloberfläche"
+msgid "User-specific.\nOnly applies to video player UI"
+msgstr "Benutzerspezifisch.\nGilt nur für die Video-Abspieloberfläche"
 
 #: 
 msgctxt "#32940"
@@ -2128,8 +2128,8 @@ msgstr "Adaptiv"
 
 #: 
 msgctxt "#32977"
-msgid "Allow VC1"
-msgstr "VC1 zulassen"
+msgid "VC1"
+msgstr "VC1"
 
 #: 
 msgctxt "#32978"
@@ -2158,15 +2158,13 @@ msgstr "Je nachdem, wie viele Kerne Deine CPU hat und wie viel sie verarbeiten k
 
 #: 
 msgctxt "#32983"
-msgid "Player Theme"
-msgstr "Player-Theme"
+msgid "Theme"
+msgstr "Aussehen"
 
 #: 
 msgctxt "#32984"
-msgid "Sets the player theme. Currently only customizes the playback control buttons. ATTENTION: [I]Might[/I] need an addon restart.\n"
-"In order to customize this, copy one of the xml's in script.plexmod/resources/skins/Main/1080i/templates to addon_data/script.plexmod/templates/seek_dialog_buttons_custom.xml and adjust it to your liking, then select \"Custom\" as your theme."
-msgstr "Wählt das Theme des Players. Verändert aktuell nur die Abspiel-Knöpfe. ACHTUNG: Ein Addon-Neustart [I]könnte[/I] notwendig sein.\n"
-"Um dies individuell anzupassen, kopiere eine der xml's aus script.plexmod/resources/skins/Main/1080i/templates nach addon_data/script.plexmod/templates/seek_dialog_buttons_custom.xml und passe es nach Deinen Ansprüchen an; danach \"Individualisiert\" als Theme wählen."
+msgid "Sets the theme. Currently only customizes all control buttons. ATTENTION: [I]Might[/I] need an addon restart.\nIn order to customize this, copy one of the xml's in script.plexmod/resources/skins/Main/1080i/templates to addon_data/script.plexmod/templates/{templatename}_custom.xml and adjust it to your liking, then select \"Custom\" as your theme."
+msgstr "Bestimmt das Aussehen. Verändert aktuell alle Abspiel-Knöpfe. ACHTUNG: Ein Addon-Neustart [I]könnte[/I] notwendig sein.\nUm dies individuell anzupassen, kopiere eine der xml's aus script.plexmod/resources/skins/Main/1080i/templates nach addon_data/script.plexmod/templates/{templatename}_custom.xml und passe es nach Deinen Ansprüchen an; danach \"Individualisiert\" als Aussehen wählen."
 
 #: 
 msgctxt "#32985"
@@ -2325,13 +2323,13 @@ msgstr "Wenn das plex.direct-Host-Mapping überprüft wird, lokale Docker-IPv4-A
 
 #: 
 msgctxt "#33016"
-msgid "Allow TV spoilers for specific genres"
-msgstr "Erlaube TV-Spoiler für bestimmte Genres"
+msgid "Allow TV spoilers for"
+msgstr "Erlaube TV-Spoiler für"
 
 #: 
 msgctxt "#33017"
-msgid "Overrides the above for: {}"
-msgstr "Überschreibt die vorherigen Einstellungen für: {}"
+msgid "Overrides the above for specific genres. Default: Reality, Game Show, Documentary, Sport"
+msgstr "Überschreibt die vorherigen Einstellungen für bestimmte Genres. Standard: Reality, Game Show, Documentary, Sport"
 
 #: 
 msgctxt "#32303"
@@ -2495,8 +2493,8 @@ msgid "Behave like official Plex clients"
 msgstr "Verhalten wie Plex Clients"
 
 msgctxt "#33046"
-msgid "When pressing up/down while the OSD isn't shown, show OSD instead of skipping chapters."
-msgstr "Das OSD anzeigen wenn ohne OSD hoch/runter gedrückt wird, anstatt Kapitel zu wechseln."
+msgid "When pressing up/down while the OSD isn't shown, show OSD instead of skipping chapters. Additionally, when pressing down while the OSD is shown, open the chapters (if available)."
+msgstr "Das OSD anzeigen wenn ohne OSD hoch/runter gedrückt wird, anstatt Kapitel zu wechseln. Darüberhinaus werden beim Runterdrücken während das OSD angezeigt wird, die Kapitel geöffnet (wenn vorhanden)."
 
 msgctxt "#33047"
 msgid "Hubs round-robin item limit"
@@ -2541,3 +2539,19 @@ msgstr "Keine"
 msgctxt "#33057"
 msgid "Show buttons"
 msgstr "Knöpfe anzeigen"
+
+msgctxt "#33058"
+msgid "Playback features"
+msgstr "Abspielfunktionen"
+
+msgctxt "#33059"
+msgid "Additional codecs"
+msgstr "Weitere Codecs"
+
+msgctxt "#33060"
+msgid "{feature_ds}: {desc_ds}\n{feature_4k}: {desc_4k}"
+msgstr "{feature_ds}: {desc_ds}\n{feature_4k}: {desc_4k}"
+
+msgctxt "#33061"
+msgid "Enable certain codecs if your hardware supports them. Disable them to force transcoding."
+msgstr "Bestimmte Codecs erlauben, wenn die Hardware diese unterstützt. Deaktivierung erzwingt Transcodierung."

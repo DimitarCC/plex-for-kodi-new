@@ -207,7 +207,7 @@ class SeekPlayerHandler(BasePlayerHandler):
         self.skipPostPlay = False
         self.prePlayWitnessed = False
         self.queuingNext = False
-        self.useAlternateSeek = util.deviceModel in ["UGOOS AM6B"]
+        self.useAlternateSeek = util.isCoreELEC()
         self.reset()
 
     def reset(self):
@@ -789,6 +789,8 @@ class AudioPlayerHandler(BasePlayerHandler):
         current = plist.getposition()
         size = plist.size()
 
+        self.player.stopAndWait()
+
         # Remove everything but the current track
         for x in range(size - 1, current, -1):  # First everything with a greater position
             kodijsonrpc.rpc.Playlist.Remove(playlistid=xbmc.PLAYLIST_MUSIC, position=x)
@@ -814,6 +816,8 @@ class AudioPlayerHandler(BasePlayerHandler):
         if swap is not None:
             kodijsonrpc.rpc.Playlist.Swap(playlistid=xbmc.PLAYLIST_MUSIC, position1=0, position2=swap + 1)
             kodijsonrpc.rpc.Playlist.Remove(playlistid=xbmc.PLAYLIST_MUSIC, position=0)
+
+        kodijsonrpc.rpc.Player.Open(item={"playlistid": xbmc.PLAYLIST_MUSIC})
 
         self.player.trigger('playlist.changed')
 

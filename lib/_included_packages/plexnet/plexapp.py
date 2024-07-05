@@ -289,6 +289,12 @@ class PlayerSettingsInterface(object):
         else:
             return util.INTERFACE.getPreference(key, default)
 
+    def getPlaybackFeatures(self):
+        return util.INTERFACE.getPlaybackFeatures()
+
+    def getAdditionalCodecs(self):
+        return util.INTERFACE.getAdditionalCodecs()
+
     def getMaxResolution(self, quality_type, allow4k=False):
         qualityIndex = self.getQualityIndex(quality_type)
 

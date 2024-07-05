@@ -103,6 +103,7 @@
                                 <label>$INFO[ListItem.Label]</label>
                             </control>
                             <control type="image">
+                                <visible>String.IsEmpty(ListItem.Property(is.last))</visible>
                                 <posx>0</posx>
                                 <posy>75</posy>
                                 <width>414</width>

@@ -18,6 +18,7 @@ sys.modules['_asyncio'] = None
 from . import plex
 
 from plexnet import plexapp
+from .templating import render_templates
 from .windows import background, userselect, home, windowutils
 from . import player
 from . import backgroundthread
@@ -32,6 +33,9 @@ if six.PY2:
     _Timer = threading._Timer
 else:
     _Timer = threading.Timer
+
+
+render_templates()
 
 
 def waitForThreads():
@@ -66,7 +70,6 @@ def signout():
 
 def main():
     global BACKGROUND
-    util.ensureHome()
 
     try:
         with util.Cron(0.1):

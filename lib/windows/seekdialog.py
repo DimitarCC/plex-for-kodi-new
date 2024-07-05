@@ -210,6 +210,8 @@ class SeekDialog(kodigui.BaseDialog):
         self.useAutoSeek = util.addonSettings.autoSeek
         self.useDynamicStepsForTimeline = util.addonSettings.dynamicTimelineSeek
 
+        self.showSkipIntro = False
+        self.showSkipCredits = False
         self.bingeMode = False
         self.autoSkipIntro = False
         self.autoSkipCredits = False
@@ -354,6 +356,11 @@ class SeekDialog(kodigui.BaseDialog):
             if marker:
                 startTimeOffset = marker.startTimeOffset
 
+                # marker display wanted?
+                if (not self.showSkipIntro and markerDef["marker_type"] == "intro") or \
+                        (not self.showSkipCredits and markerDef["marker_type"] == "credits"):
+                    continue
+
                 # show intro skip early? (only if intro is during the first X minutes)
                 if self.showIntroSkipEarly and markerDef["marker_type"] == "intro" and \
                         startTimeOffset <= util.addonSettings.skipIntroButtonShowEarlyThreshold1 * 1000:
@@ -400,11 +407,13 @@ class SeekDialog(kodigui.BaseDialog):
         self.bigSeekGroupControl = self.getControl(self.BIG_SEEK_GROUP_ID)
         self.initialized = True
 
-        button_settings = util.getSetting('player_show_buttons', ['subtitle_downloads'])
+        button_settings = util.getUserSetting('player_show_buttons', ['subtitle_downloads', 'skip_intro', 'skip_credits'])
         showQuickSubs = 'subtitle_downloads' in button_settings
         showRepeat = 'video_show_repeat' in button_settings
         showFfwdRwd = 'video_show_ffwdrwd' in button_settings
         showShuffle = 'video_show_shuffle' in button_settings
+        self.showSkipIntro = 'skip_intro' in button_settings
+        self.showSkipCredits = 'skip_credits' in button_settings
         self.setBoolProperty('nav.quick_subtitles', showQuickSubs)
         self.setBoolProperty('nav.repeat', showRepeat)
         self.setBoolProperty('nav.ffwdrwd', showFfwdRwd)
@@ -2136,7 +2145,7 @@ class SeekDialog(kodigui.BaseDialog):
             if markerDef["countdown"] > 0:
                 markerName = "{} ({})".format(markerDef["autoSkipName"], markerDef["countdown"])
             else:
-                markerName = markerDef["autoSkipName"]
+                markerName = "  {}   ".format(markerDef["autoSkipName"])
         else:
             markerName = markerDef["name"]
         self.setProperty('skipMarkerName', markerName)

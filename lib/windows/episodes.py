@@ -488,6 +488,7 @@ class EpisodesWindow(kodigui.ControlledWindow, windowutils.UtilMixin, SeasonsMix
 
         if selected_new:
             self.setProperty('hub.focus', "0")
+            self.setProperty('hub.prevfocus', "-1")
             self.setProperty('on.extras', '')
             self.currentItemLoaded = False
             self.lastFocusID = None
@@ -637,6 +638,8 @@ class EpisodesWindow(kodigui.ControlledWindow, windowutils.UtilMixin, SeasonsMix
             self.openItem(self.relatedListControl)
 
     def onFocus(self, controlID):
+        if self.lastFocusID and 399 < self.lastFocusID < 500:
+            self.setProperty('hub.prevfocus', str(self.lastFocusID - 400))
         self.lastFocusID = controlID
 
         # we allow hidden focus on the play button when we're in multiple video files mode. in that case focus the
@@ -648,6 +651,7 @@ class EpisodesWindow(kodigui.ControlledWindow, windowutils.UtilMixin, SeasonsMix
 
         if 399 < controlID < 500:
             self.setProperty('hub.focus', str(controlID - 400))
+
             if controlID == self.RELATED_LIST_ID:
                 self.updateBackgroundFrom(self.relatedListControl.getSelectedItem().dataSource)
         if xbmc.getCondVisibility('ControlGroup(50).HasFocus(0) + [ControlGroup(300).HasFocus(0) | ControlGroup(1300).HasFocus(0)]'):
@@ -1171,6 +1175,7 @@ class EpisodesWindow(kodigui.ControlledWindow, windowutils.UtilMixin, SeasonsMix
     def setItemInfo(self, video, mli):
         # video.reload(checkFiles=1)
         mli.setProperty('background', util.backgroundFromArt(video.art, width=self.width, height=self.height))
+        mli.setProperty('art', util.backgroundFromArtNoBlur(video.art, width=self.width, height=self.height))
         mli.setProperty('show.title', video.grandparentTitle or (self.show_.title if self.show_ else ''))
         mli.setProperty('duration', util.durationToText(video.duration.asInt()))
         mli.setProperty('video.rendering', video.videoCodecRendering)

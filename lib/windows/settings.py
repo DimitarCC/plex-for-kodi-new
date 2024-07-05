@@ -9,9 +9,13 @@ from kodi_six import xbmcgui
 
 import lib.cache
 from lib import util
+from lib import genres
 from lib.util import T
 from . import kodigui
 from . import windowutils
+
+
+UNDEF = "__UNDEF__"
 
 
 class Setting(object):
@@ -21,19 +25,34 @@ class Setting(object):
     desc = None
     default = None
     userAware = False
+    isThemeRelevant = False
 
     def translate(self, val):
         return str(val)
 
-    def get(self):
-        return util.getSetting(self.ID, self.default)
+    def get(self, *args, **kwargs):
+        _id = kwargs.pop("_id", UNDEF)
+        default = kwargs.pop("default", UNDEF)
+        return util.getSetting(_id if _id != UNDEF else self.ID,
+                               default if default != UNDEF else self.default)
 
-    def set(self, val):
-        old = Setting.get(self)
-        setRet = util.setSetting(self.ID, val)
-        if old != val:
-            util.DEBUG_LOG('Setting: {0} - changed from [{1}] to [{2}]', self.ID, old, val)
-            plexnet.util.APP.trigger('change:{0}'.format(self.ID), value=val)
+    def emit_events(self, id_, val, **kwargs):
+        plexnet.util.APP.trigger('change:{0}'.format(id_), value=val)
+
+    def emit_tr_events(self, id_, val, **kwargs):
+        plexnet.util.APP.trigger('theme_relevant_setting', id=id_, value=val, **kwargs)
+
+    def set(self, val, skip_get=False):
+        if not skip_get:
+            old = Setting.get(self)
+            setRet = util.setSetting(self.ID, val)
+            if old != val:
+                util.DEBUG_LOG('Setting: {0} - changed from [{1}] to [{2}]', self.ID, old, val)
+                self.emit_events(self.ID, val)
+                if self.isThemeRelevant:
+                    self.emit_tr_events(self.ID, val)
+        else:
+            setRet = util.setSetting(self.ID, val)
         return setRet
 
     def valueLabel(self):
@@ -44,11 +63,12 @@ class Setting(object):
 
 
 class BasicSetting(Setting):
-    def __init__(self, ID, label, default, desc=''):
+    def __init__(self, ID, label, default, desc='', theme_relevant=False):
         self.ID = ID
         self.label = label
         self.default = default
         self.desc = desc
+        self.isThemeRelevant = theme_relevant
 
     def description(self, desc):
         self.desc = desc
@@ -68,8 +88,8 @@ class ListSetting(BasicSetting):
     def optionIndex(self):
         return len(self.options) - 1 - self.get()
 
-    def set(self, val):
-        BasicSetting.set(self, len(self.options) - 1 - val)
+    def set(self, val, skip_get=False):
+        BasicSetting.set(self, len(self.options) - 1 - val, skip_get=skip_get)
 
 
 class QualitySetting(ListSetting):
@@ -105,32 +125,50 @@ class BoolSetting(BasicSetting):
     type = 'BOOL'
 
 
-class BoolUserSetting(BoolSetting):
+class UserAwareSetting(BasicSetting):
     """
     A user-aware BoolSetting
     """
     userAware = True
 
+    def __init__(self, *args, **kwargs):
+        super(UserAwareSetting, self).__init__(*args, **kwargs)
+        util.USER_SETTINGS.append(self.ID)
+
     @property
     def userAwareID(self):
         return '{}.{}'.format(self.ID, plexnet.plexapp.ACCOUNT.ID)
 
-    def get(self):
-        return util.getSetting(self.userAwareID, self.default)
+    def emit_events(self, id_, val, **kwargs):
+        plexnet.util.APP.trigger('change:{0}'.format(self.ID), key=self.userAwareID, value=val, skey=self.ID)
 
-    def set(self, val):
-        old = self.get()
-        if old != val:
-            util.DEBUG_LOG('Setting: {0} - changed from [{1}] to [{2}]', self.userAwareID, old, val)
-            plexnet.util.APP.trigger('change:{0}'.format(self.ID), key=self.userAwareID, value=val, skey=self.ID)
+    def get(self, *args, **kwargs):
+        _id = kwargs.pop("_id", UNDEF)
+        default = kwargs.pop("default", UNDEF)
+        return super(UserAwareSetting, self).get(*args,
+                                                 _id=_id if _id != UNDEF else self.userAwareID, default=default,
+                                                 **kwargs)
+
+    def set(self, val, skip_get=False):
+        if not skip_get:
+            old = self.get(_id=self.userAwareID)
+            if old != val:
+                util.DEBUG_LOG('Setting: {0} - changed from [{1}] to [{2}]', self.userAwareID, old, val)
+                self.emit_events(self.userAwareID, val)
+                if self.isThemeRelevant:
+                    self.emit_tr_events(self.userAwareID, val)
         return util.setSetting(self.userAwareID, val)
+
+
+class BoolUserSetting(UserAwareSetting, BoolSetting):
+    pass
 
 
 class OptionsSetting(BasicSetting):
     type = 'OPTIONS'
 
-    def __init__(self, ID, label, default, options):
-        BasicSetting.__init__(self, ID, label, default)
+    def __init__(self, ID, label, default, options, **kwargs):
+        BasicSetting.__init__(self, ID, label, default, **kwargs)
         self.options = options
 
     def translate(self, val):
@@ -158,14 +196,15 @@ class MultiOptionsSetting(OptionsSetting):
     valueLabelDelim = ', '
     noneOption = None
 
-    def __init__(self, ID, label, default, options, none_option=None):
-        super(MultiOptionsSetting, self).__init__(ID, label, [], options)
+    def __init__(self, ID, label, default, options, none_option=None, **kwargs):
+        super(MultiOptionsSetting, self).__init__(ID, label, [], options, **kwargs)
         self.default = default
         self.noneOption = none_option
         util.JSON_SETTINGS.append(self.ID)
 
-    def get(self, with_default=True):
-        val = util.getSetting(self.ID, DEFAULT)
+    def get(self, *args, **kwargs):
+        with_default = kwargs.pop('with_default', True)
+        val = super(MultiOptionsSetting, self).get(*args, default=DEFAULT, **kwargs)
         if val and val != DEFAULT:
             try:
                 return json.loads(val)
@@ -183,16 +222,17 @@ class MultiOptionsSetting(OptionsSetting):
                 if lval != DEFAULT and lval == "true":
                     ret.append(o[0])
             if ret:
-                self.set(ret)
+                self.set(ret, skip_get=True)
                 return ret
         return with_default and self.default or []
 
-    def set(self, val):
-        super(MultiOptionsSetting, self).set(json.dumps(val))
+    def set(self, val, skip_get=False):
+        super(MultiOptionsSetting, self).set(json.dumps(val), skip_get=skip_get)
 
     def translate(self, val, return_str=False, delim=", "):
         if isinstance(val, (list, tuple, set)):
-            data = [super(MultiOptionsSetting, self).translate(v) for v in val]
+            # keep options order
+            data = [super(MultiOptionsSetting, self).translate(o[0]) for o in self.options if o[0] in val]
             if return_str:
                 return delim.join(data)
             return data
@@ -213,30 +253,35 @@ class MultiOptionsSetting(OptionsSetting):
         return ret
 
 
+class MultiUAOptionsSetting(MultiOptionsSetting, UserAwareSetting):
+    pass
+
+
+class KCMSetting(OptionsSetting):
+    key = None
+
+    def emit_events(self, id_, val, **kwargs):
+        plexnet.util.APP.trigger('change:{0}'.format(self.ID), value=val)
+
+    def get(self, *args, **kwargs):
+        return getattr(lib.cache.kcm, self.key)
+
+    def set(self, val, skip_get=False):
+        if not skip_get:
+            old = self.get()
+            if old != val:
+                util.DEBUG_LOG('Setting: {0} - changed from [{1}] to [{2}]', self.ID, old, val)
+                self.emit_events(self.ID, val)
+
+        lib.cache.kcm.write(**{self.key: val})
+
+
 class BufferSetting(OptionsSetting):
-    def get(self):
-        return lib.cache.kcm.memorySize
-
-    def set(self, val):
-        old = self.get()
-        if old != val:
-            util.DEBUG_LOG('Setting: {0} - changed from [{1}] to [{2}]', self.ID, old, val)
-            plexnet.util.APP.trigger('change:{0}'.format(self.ID), value=val)
-
-        lib.cache.kcm.write(memorySize=val)
+    key = "memorySize"
 
 
 class ReadFactorSetting(OptionsSetting):
-    def get(self):
-        return lib.cache.kcm.readFactor
-
-    def set(self, val):
-        old = self.get()
-        if old != val:
-            util.DEBUG_LOG('Setting: {0} - changed from [{1}] to [{2}]', self.ID, old, val)
-            plexnet.util.APP.trigger('change:{0}'.format(self.ID), value=val)
-
-        lib.cache.kcm.write(readFactor=val)
+    key = "readFactor"
 
 
 class InfoSetting(BasicSetting):
@@ -320,14 +365,28 @@ class Settings(object):
                     T(32100, 'Skip user selection and pin entry on startup.')
                 ),
                 BoolSetting(
-                    'use_alt_watched', T(33022, ''), True
+                    'use_alt_watched', T(33022, ''), True, theme_relevant=True
                 ).description(
                     T(33023, "")
                 ),
                 BoolSetting(
-                    'hide_aw_bg', T(33024, ''), False
+                    'hide_aw_bg', T(33024, ''), False, theme_relevant=True
                 ).description(
                     T(33025, "")
+                ),
+                OptionsSetting(
+                    'theme',
+                    T(32983, 'Theme'),
+                    util.DEF_THEME,
+                    (
+                        ('modern', T(32985, 'Modern')),
+                        ('modern-dotted', T(32986, 'Modern (dotted)')),
+                        ('modern-colored', T(32989, 'Modern (colored)')),
+                        ('classic', T(32987, 'Classic')),
+                        ('custom', T(32988, 'Custom')),
+                    ), theme_relevant=True
+                ).description(
+                    T(32984, 'stub')
                 ),
                 OptionsSetting(
                     'no_episode_spoilers2', T(33006, ''),
@@ -336,18 +395,18 @@ class Settings(object):
                         ('off', T(32481, '')),
                         ('unwatched', T(33010, '')),
                         ('funwatched', T(33011, '')),
-                    )
+                    ), theme_relevant=True
                 ).description(T(33007, "")),
                 BoolSetting(
                     'no_unwatched_episode_titles', T(33012, ''), True
                 ).description(
                     T(33013, "")
                 ),
-                BoolSetting(
-                    'spoilers_allowed_genres', T(33016, ''), True
-                ).description(
-                    T(33017, "").format(", ".join('"{}"'.format(t) for t in util.SPOILER_ALLOWED_GENRES))
-                ),
+                MultiOptionsSetting(
+                    'spoilers_allowed_genres2', T(33016, ''),
+                    ["Reality", "Game Show", "Documentary", "Sport"],
+                    [(g, g) for g in genres.GENRES_TV]
+                ).description(T(33017, "")),
                 BoolSetting(
                     'hubs_use_new_continue_watching', T(32998, ''), False
                 ).description(
@@ -359,12 +418,14 @@ class Settings(object):
                     T(33044, "").format(util.addonSettings.hubsRrMax)
                 ),
                 BoolSetting(
-                    'hubs_bifurcation_lines', T(32961, 'Show hub bifurcation lines'), False
+                    'hubs_bifurcation_lines', T(32961, 'Show hub bifurcation lines'), False,
+                    theme_relevant=True
                 ).description(
                     T(32962, "Visually separate hubs horizontally using a thin line.")
                 ),
                 BoolSetting(
-                    'path_mapping_indicators', T(33032, 'Show path mapping indicators'), True
+                    'path_mapping_indicators', T(33032, 'Show path mapping indicators'), True,
+                    theme_relevant=True
                 ).description(
                     T(33033, "When path mapping is active for a library, display an indicator.")
                 ),
@@ -386,21 +447,27 @@ class Settings(object):
                 QualitySetting('local_quality', T(32020, 'Local Quality'), 13),
                 QualitySetting('remote_quality', T(32021, 'Remote Quality'), 13),
                 QualitySetting('online_quality', T(32022, 'Online Quality'), 13),
-                BoolSetting('playback_directplay', T(32025, 'Allow Direct Play'), True),
-                BoolSetting('playback_remux', T(32026, 'Allow Direct Stream'), True).description(
-                    T(32979, 'Allows the server to only transcode streams of a video that need transcoding,'
-                             ' while streaming the others unaltered. If disabled, force the server to transcode '
-                             'everything not direct playable.')
-                ),
-                BoolSetting('allow_4k', T(32036, 'Allow 4K'), True).description(
-                    T(32102, 'Enable this if your hardware can handle 4K playback. Disable it to force transcoding.')
-                ),
-                BoolSetting('allow_hevc', T(32037, 'Allow HEVC (h265)'), True).description(
-                    T(32103, 'Enable this if your hardware can handle HEVC/h265. Disable it to force transcoding.')
-                ),
-                BoolSetting('allow_vc1', T(32977, 'Allow VC1'), True).description(
-                    T(32978, 'Enable this if your hardware can handle VC1. Disable it to force transcoding.')
-                )
+                MultiOptionsSetting(
+                    'playback_features', T(33058, ''),
+                    ["playback_directplay", "playback_remux", "allow_4k"],
+                    (
+                        ('playback_directplay', T(32025, '')),
+                        ('playback_remux', T(32026, '')),
+                        ('allow_4k', T(32036, '')),
+                    )
+                ).description(T(33060, "").format(
+                    feature_ds=T(32026, ''),
+                    desc_ds=T(32979, ''),
+                    feature_4k=T(32036, ''),
+                    desc_4k=T(32102, ''))),
+                MultiOptionsSetting(
+                    'allowed_codecs', T(33059, ''),
+                    ["allow_hevc", "allow_vc1"],
+                    [
+                        ('allow_hevc', T(32037, '')),
+                        ('allow_vc1', T(32977, '')),
+                    ] + ([('allow_av1', T(32601, ''))] if util.KODI_VERSION_MAJOR >= 20 else [])
+                ).description(T(33061, "")),
             )
         ),
         'audio': (
@@ -459,31 +526,20 @@ class Settings(object):
         ),
         'player': (
             T(32940, 'Player UI'), (
-                OptionsSetting(
-                    'theme',
-                    T(32983, 'Player Theme'),
-                    util.DEF_THEME,
-                    (
-                        ('modern', T(32985, 'Modern')),
-                        ('modern-dotted', T(32986, 'Modern (dotted)')),
-                        ('modern-colored', T(32989, 'Modern (colored)')),
-                        ('classic', T(32987, 'Classic')),
-                        ('custom', T(32988, 'Custom')),
-                    )
-                ).description(
-                    T(32984, 'stub')
-                ),
                 BoolSetting('player_official', T(33045, 'Behave like official Plex clients'), True).description(
                     T(33046, '')),
                 BoolSetting('no_spoilers', T(33004, ''), False).description(
                     T(33005, '')),
-                MultiOptionsSetting(
-                    'player_show_buttons', T(33057, 'Show buttons'), ['subtitle_downloads'],
+                MultiUAOptionsSetting(
+                    'player_show_buttons', T(33057, 'Show buttons'),
+                    ['subtitle_downloads', 'skip_intro', 'skip_credits'],
                     (
                         ('subtitle_downloads', T(32932, 'Show subtitle quick-actions button')),
                         ('video_show_ffwdrwd', T(32933, 'Show FFWD/RWD buttons')),
                         ('video_show_repeat', T(32934, 'Show repeat button')),
                         ('video_show_shuffle', T(32935, 'Show shuffle button')),
+                        ('skip_intro', T(32495, 'Skip Intro')),
+                        ('skip_credits', T(32496, 'Skip Credits')),
                     )
                 ).description(T(32939, 'Only applies to video player UI')),
                 OptionsSetting(
@@ -677,18 +733,6 @@ class Settings(object):
         return self.SETTINGS[key]
 
 
-# enable AV1 setting if kodi nexus
-if util.KODI_VERSION_MAJOR >= 20:
-    videoSettings = list(Settings.SETTINGS["video"])
-    videoSettings[1] = tuple(list(videoSettings[1]) + [
-        BoolSetting('allow_av1', T(32601, 'Allow AV1'), False).description(
-            T(32602,
-              'Enable this if your hardware can handle AV1. Disable it to force transcoding.')
-        )
-    ])
-    Settings.SETTINGS["video"] = (videoSettings[0], videoSettings[1])
-
-
 class SettingsWindow(kodigui.BaseWindow, windowutils.UtilMixin):
     xmlFile = 'script-plex-settings.xml'
     path = util.ADDON.getAddonInfo('path')
@@ -722,8 +766,11 @@ class SettingsWindow(kodigui.BaseWindow, windowutils.UtilMixin):
             self.checkSection()
             controlID = self.getFocusId()
             if action in (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU):
-                if self.getFocusId() == self.OPTIONS_LIST_ID:
+                if controlID == self.OPTIONS_LIST_ID:
                     self.setFocusId(self.SETTINGS_LIST_ID)
+                    return
+                elif controlID == self.SETTINGS_LIST_ID:
+                    self.setFocusId(self.SECTION_LIST_ID)
                     return
                 # elif not xbmc.getCondVisibility('ControlGroup({0}).HasFocus(0)'.format(self.TOP_GROUP_ID)):
                 #     self.setFocusId(self.TOP_GROUP_ID)
@@ -766,6 +813,7 @@ class SettingsWindow(kodigui.BaseWindow, windowutils.UtilMixin):
             label = self.settings[sectionID][0]
             item = kodigui.ManagedListItem(label, data_source=sectionID)
             items.append(item)
+        items[-1].setProperty('is.last', '1')
 
         self.sectionList.addItems(items)
 
@@ -861,9 +909,10 @@ class SettingsWindow(kodigui.BaseWindow, windowutils.UtilMixin):
         if isinstance(idx, int):
             idx = [idx]
         for _idx in idx:
-            self.optionsList.selectItem(_idx)
             if setting.type == 'MULTI':
                 self.optionsList[_idx].setProperty('checkbox.checked', '1')
+        if idx:
+            self.optionsList.selectItem(idx[-1])
         self.setFocusId(self.OPTIONS_LIST_ID)
 
     def toggleBool(self, mli, setting):

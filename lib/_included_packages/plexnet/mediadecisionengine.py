@@ -264,9 +264,11 @@ class MediaDecisionEngine(object):
     def canDirectPlay(self, item, choice):
         maxResolution = item.settings.getMaxResolution(item.getQualityType(), self.isSupported4k(choice.media, choice.videoStream))
         height = choice.media.getVideoResolution()
+        features = item.settings.getPlaybackFeatures()
+        video_codecs = item.settings.getAdditionalCodecs()
         if height > maxResolution:
             util.LOG("MDE: (DP) Video height is greater than max allowed: {0} > {1}", height, maxResolution)
-            if height > 1088 and item.settings.getPreference("allow_4k", True):
+            if height > 1088 and "allow_4k" in features:
                 util.LOG("MDE: (DP) Unsupported 4k media")
             return False
 
@@ -286,15 +288,15 @@ class MediaDecisionEngine(object):
                 util.LOG("MDE: (DP) Frame rate is not supported for resolution: {0}@{1}", height, videoFrameRate)
                 return False
 
-        if choice.videoStream.codec == "hevc" and not item.settings.getPreference("allow_hevc", True):
+        if choice.videoStream.codec == "hevc" and "allow_hevc" not in video_codecs:
             util.LOG("MDE: (DP) Codec is HEVC, which is disabled")
             return False
 
-        if choice.videoStream.codec == "av1" and not item.settings.getPreference("allow_av1", False):
+        if choice.videoStream.codec == "av1" and "allow_av1" not in video_codecs:
             util.LOG("MDE: (DP) Codec is AV1, which is disabled")
             return False
 
-        if choice.videoStream.codec == "vc1" and not item.settings.getPreference("allow_vc1", True):
+        if choice.videoStream.codec == "vc1" and "allow_vc1" not in video_codecs:
             util.LOG("MDE: (DP) Codec is VC1, which is disabled")
             return False
 
@@ -511,7 +513,7 @@ class MediaDecisionEngine(object):
         return 0
 
     def isSupported4k(self, media, videoStream):
-        if videoStream is None or not util.INTERFACE.getPreference("allow_4k", True):
+        if videoStream is None or "allow_4k" not in util.INTERFACE.getPlaybackFeatures():
             return False
 
         # # Roku 4 only: H.265/HEVC (MKV, MP4, MOV); VP9 (.MKV)

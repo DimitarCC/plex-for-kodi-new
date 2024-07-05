@@ -11,14 +11,11 @@ import math
 import time
 import datetime
 import contextlib
-import types
 import subprocess
-
 import unicodedata
 
 import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import six
-import os
 import struct
 import requests
 
@@ -33,6 +30,7 @@ from kodi_six import xbmcvfs
 from . import colors
 # noinspection PyUnresolvedReferences
 from .exceptions import NoDataException
+from .logging import log, log_error
 from plexnet import signalsmixin
 
 DEBUG = True
@@ -85,6 +83,10 @@ else:
 PROFILE = translatePath(ADDON.getAddonInfo('profile'))
 
 
+DEF_THEME = "modern-colored"
+THEME_VERSION = 8
+
+
 def getChannelMapping():
     data = rpc.Settings.GetSettings(filter={"section": "system", "category": "audio"})["settings"]
     return list(filter(lambda i: i["id"] == "audiooutput.channels", data))[0]["options"]
@@ -127,13 +129,16 @@ def getUserSetting(key, default=None):
     if not plexnet.util.ACCOUNT:
         return default
 
+    is_json = key in JSON_SETTINGS
+
     key = '{}.{}'.format(key, plexnet.util.ACCOUNT.ID)
     with SETTINGS_LOCK:
         setting = ADDON.getSetting(key)
-        return _processSetting(setting, default)
+        return _processSetting(setting, default, is_json=is_json)
 
 
 JSON_SETTINGS = []
+USER_SETTINGS = []
 
 
 def _processSetting(setting, default, is_json=False):
@@ -219,18 +224,11 @@ class AddonSettings(object):
 
 addonSettings = AddonSettings()
 
+DEBUG = addonSettings.debug
+
 
 def LOG(msg, *args, **kwargs):
-    if args:
-        # resolve dynamic args
-        msg = msg.format(*[arg() if isinstance(arg, types.FunctionType) else arg for arg in args])
-
-    level = kwargs.pop("level", xbmc.LOGINFO)
-
-    if kwargs:
-        # resolve dynamic kwargs
-        msg = msg.format(**dict((k, v()) if isinstance(v, types.FunctionType) else v for k, v in kwargs.items()))
-    xbmc.log('script.plex: {0}'.format(msg), level)
+    return log(msg, *args, **kwargs)
 
 
 def DEBUG_LOG(msg, *args, **kwargs):
@@ -240,23 +238,11 @@ def DEBUG_LOG(msg, *args, **kwargs):
     if not addonSettings.debug and not xbmc.getCondVisibility('System.GetBool(debug.showloginfo)'):
         return
 
-    LOG(msg, *args, **kwargs)
+    return log(msg, *args, **kwargs)
 
 
 def ERROR(txt='', hide_tb=False, notify=False, time_ms=3000):
-    short = str(sys.exc_info()[1])
-    if hide_tb:
-        xbmc.log('script.plex: ERROR: {0} - {1}'.format(txt, short), xbmc.LOGERROR)
-        return short
-
-    import traceback
-    tb = traceback.format_exc()
-    xbmc.log("_________________________________________________________________________________", xbmc.LOGERROR)
-    xbmc.log('script.plex: ERROR: ' + txt, xbmc.LOGERROR)
-    for l in tb.splitlines():
-        xbmc.log('    ' + l, xbmc.LOGERROR)
-    xbmc.log("_________________________________________________________________________________", xbmc.LOGERROR)
-    xbmc.log("`", xbmc.LOGERROR)
+    short = log_error(txt, hide_tb)
     if notify:
         showNotification('ERROR: {0}'.format(txt or short), time_ms=time_ms)
     return short
@@ -556,9 +542,6 @@ def scaleResolution(w, h, by=None):
     return w, h
 
 
-SPOILER_ALLOWED_GENRES = ("Reality", "Game Show", "Documentary", "Sport")
-
-
 class TextBox:
     # constants
     WINDOW = 10147
@@ -826,7 +809,9 @@ def getTimeFormat():
 
     # Kodi Omega on Android seems to have borked the regional format returned separately
     # (not happening on Windows at least). Format returned can be "%H:mm:ss", which is incompatible with strftime; fix.
-    adjustedFmt = adjustedFmt.replace("mm", "%M").replace("ss", "%S").replace("xx", "%p").replace("M", "%M")
+    adjustedFmt = adjustedFmt.replace("mm", "%M").replace("ss", "%S").replace("xx", "%p")
+    if "%M" not in adjustedFmt and "M" in adjustedFmt:
+        adjustedFmt = adjustedFmt.replace("M", "%M")
     adjustedFmtKN = adjustedFmt.replace("%M", "mm").replace("%H", "hh").replace("%I", "h").replace("%S", "ss").\
         replace("%p", "xx").replace(nonPadIF, "h").replace(nonPadHF, "h")
 
@@ -846,78 +831,6 @@ def getShortDateFormat():
 
 
 shortDF = getShortDateFormat()
-
-DEF_THEME = "modern-colored"
-THEME_VERSION = 4
-
-
-def applyTheme(theme=None):
-    """
-    Dynamically build script-plex-seek_dialog.xml by combining a player button template with
-    script-plex-seek_dialog_skeleton.xml
-    """
-    theme = theme or getSetting('theme', DEF_THEME)
-    skel = os.path.join(ADDON.getAddonInfo('path'), "resources", "skins", "Main", "1080i",
-                        "script-plex-seek_dialog_skeleton.xml")
-    if theme == "custom":
-        btnTheme = os.path.join(ADDON.getAddonInfo("profile"), "templates",
-                                "seek_dialog_buttons_custom.xml")
-        customSkel = os.path.join(ADDON.getAddonInfo("profile"), "templates",
-                                  "script-plex-seek_dialog_skeleton_custom.xml")
-        if xbmcvfs.exists(customSkel):
-            skel = customSkel
-    else:
-        btnTheme = os.path.join(ADDON.getAddonInfo('path'), "resources", "skins", "Main", "1080i", "templates",
-                                "seek_dialog_buttons_{}.xml".format(theme))
-
-    if not xbmcvfs.exists(btnTheme):
-        LOG("Theme {} doesn't exist, falling back to modern".format(theme))
-        setSetting('theme', DEF_THEME)
-        return applyTheme(DEF_THEME)
-
-    try:
-        # read skeleton
-        f = xbmcvfs.File(skel)
-        skelData = f.read()
-        f.close()
-    except:
-        ERROR("Couldn't find {}".format("script-plex-seek_dialog_skeleton.xml"))
-    else:
-        try:
-            # read button theme
-            f = xbmcvfs.File(btnTheme)
-            btnData = f.read()
-            f.close()
-        except:
-            ERROR("Couldn't find {}".format("seek_dialog_buttons_{}.xml".format(theme)))
-        else:
-            # combine both
-            finalXML = skelData.replace('<!-- BUTTON_INCLUDE -->', btnData)
-            try:
-                # write final file
-                f = xbmcvfs.File(os.path.join(ADDON.getAddonInfo('path'), "resources", "skins", "Main", "1080i",
-                                 "script-plex-seek_dialog.xml"), "w")
-                f.write(finalXML)
-                f.close()
-            except:
-                ERROR("Couldn't write script-plex-seek_dialog.xml")
-            else:
-                LOG('Using theme: {}'.format(theme))
-
-
-# apply theme if version changed
-theme = getSetting('theme', DEF_THEME)
-curThemeVer = getSetting('theme_version', 0)
-if curThemeVer < THEME_VERSION:
-    setSetting('theme_version', THEME_VERSION)
-    # apply seekdialog button theme
-    applyTheme(theme)
-
-# apply theme if seek_dialog xml missing
-if not xbmcvfs.exists(os.path.join(ADDON.getAddonInfo('path'), "resources", "skins", "Main", "1080i",
-                                   "script-plex-seek_dialog.xml")):
-    applyTheme(theme)
-
 
 # get mounts
 KODI_SOURCES = []
@@ -963,25 +876,17 @@ def getPlatform():
 platform = getPlatform()
 
 
-# There are lots of different devices and different ways to get the device model.  This way is known
-# to work with the Ugoos am6b+ device but probably doesn't work for others.
-def getDeviceModel():
+def isCoreELEC():
     try:
-        deviceModel = "Unknown"
-        if platform == "RaspberryPi":
-            stdout = subprocess.check_output('cat /proc/cpuinfo', shell=True).decode()
-            hardwareRegex = re.compile(r'Hardware\s*:\s*(.*)')
-            match = hardwareRegex.search(stdout)
-            deviceModel = "Unknown"
+        if platform in ['Linux', 'RaspberryPi']:
+            stdout = subprocess.check_output('lsb_release', shell=True).decode()
+            match = re.search(r'CoreELEC', stdout)
             if match:
-                deviceModel = match.group(1)
+                return True
 
-        return deviceModel
+        return False
     except:
-        return "Unknown"
-
-
-deviceModel = getDeviceModel()
+        return False
 
 
 def getRunningAddons():
@@ -1033,13 +938,25 @@ def getProgressImage(obj, perc=None, view_offset=None):
     return 'script.plex/progress/{0}.png'.format(pct)
 
 
-def backgroundFromArt(art, width=1920, height=1080, background=colors.noAlpha.Background):
+def backgroundFromArt(art, width=1920, height=1080, background=colors.noAlpha.BackgroundVeryDark):
     if not art:
         return
     return art.asTranscodedImageURL(
         width, height,
         blur=addonSettings.backgroundArtBlurAmount2,
         opacity=addonSettings.backgroundArtOpacityAmount2,
+        background=background,
+        blendColor='40000000',
+        imageFormat='png'
+    )
+
+def backgroundFromArtNoBlur(art, width=1920, height=1080, background=colors.noAlpha.Background):
+    if not art:
+        return
+    return art.asTranscodedImageURL(
+        width, height,
+        blur=0,
+        opacity=100,
         background=background
     )
 

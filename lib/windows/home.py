@@ -17,6 +17,7 @@ from lib import util
 from lib.path_mapping import pmm
 from lib.plex_hosts import pdm
 from lib.util import T
+from lib.templating import render_templates
 from . import busy
 from . import dropdown
 from . import kodigui
@@ -404,6 +405,7 @@ class HomeWindow(kodigui.BaseWindow, util.CronReceiver, SpoilersMixin):
         self._shuttingDown = False
         self._skipNextAction = False
         self._reloadOnReinit = False
+        self._applyTheme = False
         self._ignoreTick = False
         self.librarySettings = None
         self.hubSettings = None
@@ -475,6 +477,10 @@ class HomeWindow(kodigui.BaseWindow, util.CronReceiver, SpoilersMixin):
         self.checkPlexDirectHosts(plexapp.SERVERMANAGER.allConnections, source="stored")
 
     def onReInit(self):
+        if self._applyTheme:
+            self.setTheme(self._applyTheme)
+            self._applyTheme = False
+
         if self._reloadOnReinit:
             self.serverRefresh()
             self._reloadOnReinit = False
@@ -598,9 +604,10 @@ class HomeWindow(kodigui.BaseWindow, util.CronReceiver, SpoilersMixin):
     def updateProperties(self, *args, **kwargs):
         self.setBoolProperty('bifurcation_lines', util.getSetting('hubs_bifurcation_lines', False))
 
-    def setTheme(self, *args, **kwargs):
-        util.theme = kwargs["value"]
-        util.applyTheme()
+    def setTheme(self, theme):
+        self.showBusy()
+        render_templates(theme, force=True)
+        self.showBusy(False)
 
     def focusFirstValidHub(self, startIndex=None):
         indices = self.hubFocusIndexes
@@ -640,11 +647,12 @@ class HomeWindow(kodigui.BaseWindow, util.CronReceiver, SpoilersMixin):
         plexapp.util.APP.on('change:hubs_bifurcation_lines', self.updateProperties)
         plexapp.util.APP.on('change:no_episode_spoilers2', self.setDirty)
         plexapp.util.APP.on('change:no_unwatched_episode_titles', self.setDirty)
-        plexapp.util.APP.on('change:spoilers_allowed_genres', self.setDirty)
+        plexapp.util.APP.on('change:spoilers_allowed_genres2', self.setDirty)
         plexapp.util.APP.on('change:hubs_use_new_continue_watching', self.setDirty)
         plexapp.util.APP.on('change:use_alt_watched', self.setDirty)
         plexapp.util.APP.on('change:hide_aw_bg', self.setDirty)
-        plexapp.util.APP.on('change:theme', self.setTheme)
+        plexapp.util.APP.on('change:path_mapping_indicators', self.setDirty)
+        plexapp.util.APP.on('theme_relevant_setting', self.setThemeDirty)
 
         player.PLAYER.on('session.ended', self.updateOnDeckHubs)
         util.MONITOR.on('changed.watchstatus', self.updateOnDeckHubs)
@@ -666,11 +674,12 @@ class HomeWindow(kodigui.BaseWindow, util.CronReceiver, SpoilersMixin):
         plexapp.util.APP.off('change:hubs_bifurcation_lines', self.updateProperties)
         plexapp.util.APP.off('change:no_episode_spoilers2', self.setDirty)
         plexapp.util.APP.off('change:no_unwatched_episode_titles', self.setDirty)
-        plexapp.util.APP.off('change:spoilers_allowed_genres', self.setDirty)
+        plexapp.util.APP.off('change:spoilers_allowed_genres2', self.setDirty)
         plexapp.util.APP.off('change:hubs_use_new_continue_watching', self.setDirty)
         plexapp.util.APP.off('change:use_alt_watched', self.setDirty)
         plexapp.util.APP.off('change:hide_aw_bg', self.setDirty)
-        plexapp.util.APP.off('change:theme', self.setTheme)
+        plexapp.util.APP.off('change:path_mapping_indicators', self.setDirty)
+        plexapp.util.APP.off('theme_relevant_setting', self.setThemeDirty)
 
         player.PLAYER.off('session.ended', self.updateOnDeckHubs)
         util.MONITOR.off('changed.watchstatus', self.updateOnDeckHubs)
@@ -687,7 +696,8 @@ class HomeWindow(kodigui.BaseWindow, util.CronReceiver, SpoilersMixin):
         if hubs is None:
             return
 
-        if time.time() - hubs.lastUpdated > HUBS_REFRESH_INTERVAL and not xbmc.Player().isPlayingVideo():
+        if (self.is_active and time.time() - hubs.lastUpdated > HUBS_REFRESH_INTERVAL and
+                not xbmc.Player().isPlayingVideo()):
             self.showHubs(self.lastSection, update=True)
 
     def shutdown(self):
@@ -940,6 +950,7 @@ class HomeWindow(kodigui.BaseWindow, util.CronReceiver, SpoilersMixin):
         self.processCommand(search.dialog(self))
 
     def updateOnDeckHubs(self, **kwargs):
+        util.DEBUG_LOG('UpdateOnDeckHubs called')
         if util.getSetting("speedy_home_hubs2", False):
             util.DEBUG_LOG("Using alternative home hub refresh")
             sections = set()
@@ -961,7 +972,11 @@ class HomeWindow(kodigui.BaseWindow, util.CronReceiver, SpoilersMixin):
         self._reloadOnReinit = True
         self.storeSpoilerSettings()
 
-    def fullyRefreshHome(self, *args, section=None, **kwargs):
+    def setThemeDirty(self, *args, **kwargs):
+        self._applyTheme = util.getSetting("theme", "modern-colored")
+
+    def fullyRefreshHome(self, *args, **kwargs):
+        section = kwargs.pop("section", None)
         self.showSections(focus_section=section or home_section)
         self.backgroundSet = False
         self.showHubs(section if section else home_section)
