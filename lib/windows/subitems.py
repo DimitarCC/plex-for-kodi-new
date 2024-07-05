@@ -105,6 +105,9 @@ class ShowWindow(kodigui.ControlledWindow, windowutils.UtilMixin, SeasonsMixin, 
                 player.PLAYER.playBackgroundMusic(self.mediaItem.theme.asURL(True), volume,
                                                   self.mediaItem.ratingKey)
 
+    def onReInit(self):
+        PlaybackBtnMixin.onReInit(self)
+
     def setup(self):
         self.mediaItem.reload(includeExtras=1, includeExtrasCount=10, includeOnDeck=1)
 
