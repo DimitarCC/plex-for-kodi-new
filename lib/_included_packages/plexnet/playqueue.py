@@ -393,6 +393,8 @@ class PlayQueue(signalsmixin.SignalsMixin):
             self.version = response.container.playQueueVersion.asInt()
 
             itemsChanged = False
+            justAdded = False
+
             if len(response.items) == len(self._items):
                 for i in range(len(self._items)):
                     if self._items[i] != response.items[i]:
@@ -400,6 +402,9 @@ class PlayQueue(signalsmixin.SignalsMixin):
                         break
             else:
                 itemsChanged = True
+
+                if set(self._items).issubset(response.items):
+                    justAdded = set(response.items) - set(self._items)
 
             if itemsChanged:
                 self._items = response.items
@@ -473,7 +478,7 @@ class PlayQueue(signalsmixin.SignalsMixin):
             self.trigger("change")
 
             if itemsChanged:
-                self.trigger("items.changed")
+                self.trigger("items.changed", just_added=justAdded)
 
     def isWindowed(self):
         return (not self.isLocal() and (self.totalSize > self.windowSize or self.forcedWindow))

@@ -12,7 +12,7 @@ from kodi_six import xbmcgui
 from . import backgroundthread
 from . import kodijsonrpc
 from . import colors
-from .windows import seekdialog
+from .windows import seekdialog, windowutils
 from . import util
 from plexnet import plexplayer
 from plexnet import plexapp
@@ -778,8 +778,18 @@ class AudioPlayerHandler(BasePlayerHandler):
         pq.on('items.changed', self.playQueueCallback)
 
     def playQueueCallback(self, **kwargs):
+        if windowutils.HOME._shuttingDown:
+            return
+
         plist = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
+        just_added = kwargs.get("just_added")
         # plist.clear()
+
+        waited = 0
+        while not kodijsonrpc.rpc.Player.GetActivePlayers() and not util.MONITOR.abortRequested() and waited < 10:
+            util.MONITOR.waitForAbort(0.5)
+            waited += 0.5
+
         try:
             citem = kodijsonrpc.rpc.Player.GetItem(playerid=0, properties=['comment'])['item']
             plexID = citem['comment'].split(':', 1)[0]
@@ -790,35 +800,45 @@ class AudioPlayerHandler(BasePlayerHandler):
         current = plist.getposition()
         size = plist.size()
 
-        self.player.stopAndWait()
+        # if we've just added items to the playqueue, we don't need to do any swappery
+        if not just_added:
+            # Remove everything but the current track
+            for x in range(size - 1, current, -1):  # First everything with a greater position
+                kodijsonrpc.rpc.Playlist.Remove(playlistid=xbmc.PLAYLIST_MUSIC, position=x)
+            for x in range(current):  # Then anything with a lesser position
+                kodijsonrpc.rpc.Playlist.Remove(playlistid=xbmc.PLAYLIST_MUSIC, position=0)
 
-        # Remove everything but the current track
-        for x in range(size - 1, current, -1):  # First everything with a greater position
-            kodijsonrpc.rpc.Playlist.Remove(playlistid=xbmc.PLAYLIST_MUSIC, position=x)
-        for x in range(current):  # Then anything with a lesser position
-            kodijsonrpc.rpc.Playlist.Remove(playlistid=xbmc.PLAYLIST_MUSIC, position=0)
+            swap = None
+            for idx, track in enumerate(self.playQueue.items()):
+                tid = 'PLEX-{0}'.format(track.ratingKey)
+                if tid == plexID:
+                    # Save the position of the current track in the pq
+                    swap = idx
 
-        swap = None
-        for idx, track in enumerate(self.playQueue.items()):
-            tid = 'PLEX-{0}'.format(track.ratingKey)
-            if tid == plexID:
-                # Save the position of the current track in the pq
-                swap = idx
+                url, li = self.player.createTrackListItem(track, index=idx + 1)
 
-            url, li = self.player.createTrackListItem(track, index=idx + 1)
+                plist.add(url, li)
 
-            plist.add(url, li)
+            if swap is not None:
+                plist[0].setInfo('music', {
+                    'playcount': swap + 1,
+                })
 
-        plist[0].setInfo('music', {
-            'playcount': swap + 1,
-        })
+            # Now swap the track to the correct position. This seems to be the only way to update the kodi playlist position to the current track's new position
+            if swap is not None and swap != current:
+                kodijsonrpc.rpc.Playlist.Swap(playlistid=xbmc.PLAYLIST_MUSIC, position1=0, position2=swap + 1)
+                try:
+                    kodijsonrpc.rpc.Playlist.Remove(playlistid=xbmc.PLAYLIST_MUSIC, position=0)
+                except:
+                    pass
+        else:
+            # add added items
+            idx = plist.size() + 1
+            for track in just_added:
+                url, li = self.player.createTrackListItem(track, index=idx)
 
-        # Now swap the track to the correct position. This seems to be the only way to update the kodi playlist position to the current track's new position
-        if swap is not None:
-            kodijsonrpc.rpc.Playlist.Swap(playlistid=xbmc.PLAYLIST_MUSIC, position1=0, position2=swap + 1)
-            kodijsonrpc.rpc.Playlist.Remove(playlistid=xbmc.PLAYLIST_MUSIC, position=0)
-
-        kodijsonrpc.rpc.Player.Open(item={"playlistid": xbmc.PLAYLIST_MUSIC})
+                plist.add(url, li)
+                idx += 1
 
         self.player.trigger('playlist.changed')
 

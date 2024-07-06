@@ -19,6 +19,15 @@ METADATA_RELATED_OTHER = 12
 
 
 class MediaItem(plexobjects.PlexObject):
+    def __eq__(self, other):
+        return self.ratingKey == other.ratingKey
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self.ratingKey)
+
     def getIdentifier(self):
         identifier = self.get('identifier') or None
 

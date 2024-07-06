@@ -206,7 +206,7 @@ class CurrentPlaylistWindow(kodigui.ControlledWindow, windowutils.UtilMixin):
         self.doClose()
 
     def selectPlayingItem(self):
-        for mli in self.playlistListControl:
+        for mli in reversed(self.playlistListControl):
             if xbmc.getCondVisibility('String.StartsWith(MusicPlayer.Comment,{0})'.format(mli.dataSource['comment'].split(':', 1)[0])):
                 self.playlistListControl.selectItem(mli.pos())
                 break
