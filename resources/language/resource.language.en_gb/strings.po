@@ -2103,5 +2103,5 @@ msgid "Waiting {} second(s)"
 msgstr ""
 
 msgctxt "#33075"
-msgid "Wait for a time until resuming normal execution. Helps with networks coming back up after sleep events. Default: 1 second (5 seconds, CoreELEC)"
+msgid "Do something after waking up. Waiting for a time until resuming normal execution helps with networks coming back up after sleep events. Default: 1 second (5 seconds, CoreELEC)"
 msgstr ""

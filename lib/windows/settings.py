@@ -701,7 +701,7 @@ class Settings(object):
                     util.isCoreELEC and 'wait_5' or 'wait_1',
                     [('none', T(32702, 'Nothing')), ('restart', T(33071, 'Restart PM4K'))]
                     + [('wait_{}'.format(s), T(33072, '').format(s)) for s in [1, 2, 3] + list(range(5, 65, 5))]
-                ),
+                ).description(T(33075, '')),
                 OptionsSetting(
                     'player_stop_on_idle',
                     T(32946, 'Stop video playback on idle after'),

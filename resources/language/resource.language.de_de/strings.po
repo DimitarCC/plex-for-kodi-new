@@ -2609,5 +2609,5 @@ msgid "Waiting {} second(s)"
 msgstr "Warte {} Sekunde(n)"
 
 msgctxt "#33075"
-msgid "Wait for a time until resuming normal execution. Helps with networks coming back up after sleep events. Default: 1 second (5 seconds, CoreELEC)"
-msgstr "Warten, bis die normale Ausführung weiter geht. Hilft beim Aufwachen von Netzwerken nach Sleep-Ereignissen. Standard: 1 Sekunde (5 Sekunden, CoreELEC)"
+msgid "Do something after waking up. Waiting for a time until resuming normal execution helps with networks coming back up after sleep events. Default: 1 second (5 seconds, CoreELEC)"
+msgstr "Aktion ausführen nach dem Aufwachen. Warten, bis die normale Ausführung weiter geht, hilft beim Aufwachen von Netzwerken nach Sleep-Ereignissen. Standard: 1 Sekunde (5 Sekunden, CoreELEC)"
