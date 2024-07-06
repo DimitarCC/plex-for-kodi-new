@@ -93,9 +93,13 @@ class PlaylistWindow(kodigui.ControlledWindow, windowutils.UtilMixin):
     def onFirstInit(self):
         self.playlistListControl = kodigui.ManagedControlList(self, self.PLAYLIST_LIST_ID, 5)
         self.setProperties()
+        player.PLAYER.on('new.video', self.onNewVideo)
 
         self.fillPlaylist()
         self.setFocusId(self.PLAYLIST_LIST_ID)
+
+    def onReInit(self):
+        self.playlistListControl.setSelectedItemByDataSource(self.playlist.current())
 
     # def onAction(self, action):
     #     try:
@@ -107,6 +111,10 @@ class PlaylistWindow(kodigui.ControlledWindow, windowutils.UtilMixin):
     #         util.ERROR()
 
     #     kodigui.ControlledWindow.onAction(self, action)
+
+    def onNewVideo(self, *args, **kwargs):
+        video = kwargs.get("video")
+        self.playlist.setCurrent(self.playlist.getPosFromItem(video))
 
     def onAction(self, action):
         try:
@@ -136,6 +144,7 @@ class PlaylistWindow(kodigui.ControlledWindow, windowutils.UtilMixin):
             self.searchButtonClicked()
 
     def doClose(self):
+        player.PLAYER.off('new.video', self.onNewVideo)
         kodigui.ControlledWindow.doClose(self)
         self.tasks.cancel()
         ChunkRequestTask.reset()
@@ -343,6 +352,9 @@ class PlaylistWindow(kodigui.ControlledWindow, windowutils.UtilMixin):
 
         self.playlistListControl.reset()
         self.playlistListControl.addItems(items)
+
+        self.playlist.setCurrent(self.playlist.getPosFromItem(self.playlist.userCurrent()))
+        self.playlistListControl.setSelectedItemByDataSource(self.playlist.current())
 
         if total <= min(PLAYLIST_INITIAL_SIZE, PLAYLIST_PAGE_SIZE):
             return
