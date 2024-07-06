@@ -532,7 +532,8 @@ class SeekPlayerHandler(BasePlayerHandler):
                 if playedFac >= self.playedThreshold and self.next(on_end=True):
                     return
 
-        if self.seeking not in (self.SEEK_IN_PROGRESS, self.SEEK_PLAYLIST):
+        if (self.seeking not in (self.SEEK_IN_PROGRESS, self.SEEK_PLAYLIST) or
+                (self.seeking == self.SEEK_PLAYLIST and self.stoppedManually)):
             self.hideOSD(delete=True)
             self.sessionEnded()
 
