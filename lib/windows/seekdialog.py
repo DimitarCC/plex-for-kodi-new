@@ -21,6 +21,7 @@ from . import busy
 from . import dropdown
 from . import kodigui
 from . import playersettings
+from .mixins import SpoilersMixin
 
 KEY_MOVE_SET = frozenset(
     (
@@ -2269,7 +2270,7 @@ class SeekDialog(kodigui.BaseDialog):
             self.playlistDialogVisible = False
 
 
-class PlaylistDialog(kodigui.BaseDialog):
+class PlaylistDialog(kodigui.BaseDialog, SpoilersMixin):
     xmlFile = 'script-plex-video_current_playlist.xml'
     path = util.ADDON.getAddonInfo('path')
     theme = 'Main'
@@ -2284,6 +2285,7 @@ class PlaylistDialog(kodigui.BaseDialog):
 
     def __init__(self, *args, **kwargs):
         kodigui.BaseDialog.__init__(self, *args, **kwargs)
+        SpoilersMixin.__init__(self, *args, **kwargs)
         self.handler = kwargs.get('handler')
         self.playlist = self.handler.playlist
 
@@ -2321,8 +2323,19 @@ class PlaylistDialog(kodigui.BaseDialog):
             episode.grandparentTitle,
             u'{0} \u2022 {1}'.format(T(32310, 'S').format(episode.parentIndex), T(32311, 'E').format(episode.index))
         )
-        mli = kodigui.ManagedListItem(episode.title, label2,
-                                      thumbnailImage=episode.thumb.asTranscodedImageURL(*self.LI_AR16X9_THUMB_DIM),
+        title = episode.title
+        thumbnail_opts = {}
+        no_spoilers = self.getNoSpoilers(episode)
+        if no_spoilers != "off":
+            hide_spoilers = self.hideSpoilers(episode)
+            if hide_spoilers:
+                if self.noTitles:
+                    title = T(33008, '')
+                thumbnail_opts = self.getThumbnailOpts(episode, hide_spoilers=hide_spoilers)
+
+        mli = kodigui.ManagedListItem(title, label2,
+                                      thumbnailImage=episode.thumb.asTranscodedImageURL(*self.LI_AR16X9_THUMB_DIM,
+                                                                                        **thumbnail_opts),
                                       data_source=episode)
         mli.setProperty('track.duration', util.durationToShortText(episode.duration.asInt()))
         mli.setProperty('video', '1')
