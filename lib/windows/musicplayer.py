@@ -77,6 +77,9 @@ class MusicPlayerWindow(currentplaylist.CurrentPlaylistWindow):
         kodigui.ControlledWindow.doClose(self)
 
     def onAction(self, action):
+        if not self.is_current_window:
+            return
+
         if self.ignoreStopCommands and action in (xbmcgui.ACTION_PREVIOUS_MENU,
                                                   xbmcgui.ACTION_NAV_BACK,
                                                   xbmcgui.ACTION_STOP):
