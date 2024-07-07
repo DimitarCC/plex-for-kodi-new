@@ -321,7 +321,7 @@ class EpisodesWindow(kodigui.ControlledWindow, windowutils.UtilMixin, SeasonsMix
         util.DEBUG_LOG("Episodes: {}: Got progress info: {}, came from: {}".format(
             self.episode and self.episode.ratingKey or None, VIDEO_PROGRESS, self.cameFrom))
         try:
-            redirect = self.selectEpisode()
+            redirect = self.selectEpisode(from_reinit=True)
         except AttributeError:
             raise util.NoDataException
 
@@ -409,7 +409,7 @@ class EpisodesWindow(kodigui.ControlledWindow, windowutils.UtilMixin, SeasonsMix
         hasPrev = self.fillRelated(hasPrev)
         self.fillRoles(hasPrev)
 
-    def selectEpisode(self):
+    def selectEpisode(self, from_reinit=False):
         if not self.episodesPaginator:
             return
 
@@ -490,8 +490,9 @@ class EpisodesWindow(kodigui.ControlledWindow, windowutils.UtilMixin, SeasonsMix
             self.setProperty('hub.focus', "0")
             self.setProperty('hub.prevfocus', "-1")
             self.setProperty('on.extras', '')
-            self.currentItemLoaded = False
             self.lastFocusID = None
+            if not from_reinit:
+                self.currentItemLoaded = False
 
         self.episode = None
 
@@ -855,6 +856,9 @@ class EpisodesWindow(kodigui.ControlledWindow, windowutils.UtilMixin, SeasonsMix
 
     def episodeListClicked(self, force_episode=None, from_auto_play=False):
         if (not self.currentItemLoaded or self.playBtnClicked) and not from_auto_play:
+            util.DEBUG_LOG("Not honoring play action: currentItemLoaded: {0}, "
+                           "playBtnClicked: {1}, from_auto_play: {2}",
+                           self.currentItemLoaded, self.playBtnClicked, from_auto_play)
             return
 
         if not force_episode:
