@@ -655,6 +655,7 @@ class HomeWindow(kodigui.BaseWindow, util.CronReceiver, SpoilersMixin):
 
         player.PLAYER.on('session.ended', self.updateOnDeckHubs)
         util.MONITOR.on('changed.watchstatus', self.updateOnDeckHubs)
+        util.MONITOR.on('screensaver.activated', self.disableUpdates)
         util.MONITOR.on('screensaver.deactivated', self.refreshLastSection)
         util.MONITOR.on('dpms.deactivated', self.refreshLastSection)
         util.MONITOR.on('system.sleep', self.disableUpdates)
@@ -682,6 +683,7 @@ class HomeWindow(kodigui.BaseWindow, util.CronReceiver, SpoilersMixin):
 
         player.PLAYER.off('session.ended', self.updateOnDeckHubs)
         util.MONITOR.off('changed.watchstatus', self.updateOnDeckHubs)
+        util.MONITOR.off('screensaver.activated', self.disableUpdates)
         util.MONITOR.off('screensaver.deactivated', self.refreshLastSection)
         util.MONITOR.off('dpms.deactivated', self.refreshLastSection)
         util.MONITOR.off('system.sleep', self.disableUpdates)
