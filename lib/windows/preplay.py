@@ -458,8 +458,6 @@ class PrePlayWindow(kodigui.ControlledWindow, windowutils.UtilMixin, RatingsMixi
             util.messageDialog(T(32312, 'Unavailable'), T(32313, 'This item is currently unavailable.'))
             return
 
-        self.playBtnClicked = True
-
         resume = False
         if self.video.viewOffset.asInt():
             choice = dropdown.showDropdown(
@@ -479,6 +477,9 @@ class PrePlayWindow(kodigui.ControlledWindow, windowutils.UtilMixin, RatingsMixi
 
             if choice['key'] == 'resume':
                 resume = True
+
+        if not from_auto_play:
+            self.playBtnClicked = True
 
         self.processCommand(videoplayer.play(video=self.video, resume=resume))
         return True
