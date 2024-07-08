@@ -41,21 +41,41 @@
                 <visible>String.IsEmpty(Window.Property(use_bg_fallback))</visible>
                 <posx>0</posx>
                 <posy>0</posy>
-                <width>2500</width>
+                <width>1920</width>
                 <height>1080</height>
-                <fadetime>1000</fadetime>
                 <texture background="true">$INFO[Window.Property(background)]</texture>
 				<aspectratio scalediffuse="false" align="left" aligny="top">stretch</aspectratio>
             </control>-->
 			<control type="image">
                 <visible>String.IsEmpty(Window.Property(use_bg_fallback))</visible>
-                <posx>0</posx>
-                <posy>-1900</posy>
+                <posx>-50</posx>
+                <posy>-1550</posy>
                 <width>6300</width>
-                <height>4060</height>
-                <fadetime>500</fadetime>
-                <texture background="true">$INFO[Window.Property(background)]</texture>
-				<aspectratio scalediffuse="false" align="left" aligny="bottom">keep</aspectratio>
+                <height>3600</height>
+                <fadetime>1000</fadetime>
+                <texture background="true" diffuse="script.plex/blurdiff2.png">$INFO[Window.Property(background)]</texture>
+				<aspectratio scalediffuse="false" align="left" aligny="top">stretch</aspectratio>
+            </control>
+			
+			<!--<control type="image">
+                <visible>String.IsEmpty(Window.Property(use_bg_fallback))</visible>
+                <posx>0</posx>
+                <posy>-2500</posy>
+                <width>3600</width>
+                <height>4096</height>
+                <fadetime>1000</fadetime>
+                <texture background="true" diffuse="script.plex/blurdiff.png">$INFO[Window.Property(background)]</texture>
+				<aspectratio scalediffuse="false" align="left" aligny="bottom">stretch</aspectratio>
+            </control>-->
+
+			<control type="image">
+                <visible>String.IsEmpty(Window.Property(use_bg_fallback))</visible>
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>1920</width>
+                <height>1080</height>
+                <texture background="true">script.plex/blur12.png</texture>
+				<aspectratio scalediffuse="false" align="left" aligny="bottom">stretch</aspectratio>
             </control>
 			<control type="image">
                 <visible>String.IsEmpty(Window.Property(use_bg_fallback))</visible>
@@ -80,6 +100,7 @@
 				<aspectratio>keep</aspectratio>
 			</control>
 		</control>
+		
 
         <control type="group" id="50">
             <animation effect="slide" end="0,-220" time="200" delay="100" tween="quadratic" easing="in" condition="!String.IsEmpty(Window.Property(on.extras)) + !Control.HasFocus(400) + !Control.HasFocus(300) + !Control.HasFocus(1300) + !ControlGroup(200).HasFocus(0) + !Control.HasFocus(200) + !Control.HasFocus(50)">Conditional</animation>
@@ -282,7 +303,7 @@
                 <animation effect="fade" start="0" end="100" time="200" reversible="true">VisibleChange</animation>
                 <visible>!String.IsEmpty(Window.Property(initialized))</visible>
                 <defaultcontrol>302</defaultcontrol>
-                <posx>0</posx>
+                <posx>15</posx>
                 <posy>360</posy>
                 <width>1000</width>
                 <height>145</height>
