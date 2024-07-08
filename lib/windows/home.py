@@ -995,6 +995,32 @@ class HomeWindow(kodigui.BaseWindow, util.CronReceiver, SpoilersMixin):
             self.showHubs(self.lastSection, force=True)
             self.enableUpdates()
 
+    def onWake(self, *args, **kwargs):
+        wakeAction = util.getSetting('action_on_wake', util.isCoreELEC and 'wait_5' or 'wait_1')
+        if wakeAction == "restart":
+            self.closeOption = "restart"
+            self.doClose()
+            return
+        elif wakeAction.startswith("wait_"):
+            seconds = int(wakeAction.split("_")[1])
+            established = 0
+            self._ignoreInput = True
+            try:
+                with busy.BusyBlockingContext():
+                    with busy.ProgressDialog(T(33073, ''), T(33074, '').format(seconds)) as pd:
+                        while established < seconds:
+                            util.MONITOR.waitForAbort(0.5)
+                            established += 0.5
+                            pd.update(int(established * 100 / float(seconds)))
+                            if pd.isCanceled():
+                                break
+                self.refreshLastSection(*args, **kwargs)
+                return
+            finally:
+                self._ignoreInput = False
+
+        self.refreshLastSection(*args, **kwargs)
+
     @busy.dialog()
     def serverRefresh(self, section=None):
         backgroundthread.BGThreader.reset()

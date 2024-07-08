@@ -696,6 +696,13 @@ class Settings(object):
                      ('cecstandby', T(32705, 'CEC Standby')), ('logoff', T(32421, 'Sign Out')))
                 ).description(T(32701, 'When Kodi receives a sleep event from the system, run the following action.')),
                 OptionsSetting(
+                    'action_on_wake',
+                    T(33070, 'Action on Wake event'),
+                    util.isCoreELEC and 'wait_5' or 'wait_1',
+                    [('none', T(32702, 'Nothing')), ('restart', T(33071, 'Restart PM4K'))]
+                    + [('wait_{}'.format(s), T(33072, '').format(s)) for s in [1, 2, 3] + list(range(5, 65, 5))]
+                ),
+                OptionsSetting(
                     'player_stop_on_idle',
                     T(32946, 'Stop video playback on idle after'),
                     0,

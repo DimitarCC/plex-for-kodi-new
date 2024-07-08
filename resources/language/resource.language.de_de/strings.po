@@ -2555,3 +2555,59 @@ msgstr "{feature_ds}: {desc_ds}\n{feature_4k}: {desc_4k}"
 msgctxt "#33061"
 msgid "Enable certain codecs if your hardware supports them. Disable them to force transcoding."
 msgstr "Bestimmte Codecs erlauben, wenn die Hardware diese unterstützt. Deaktivierung erzwingt Transcodierung."
+
+msgctxt "#33062"
+msgid "Compiling templates"
+msgstr "Kompiliere Templates"
+
+msgctxt "#33063"
+msgid "Looking for custom templates"
+msgstr "Suche benutzerdef. Templates"
+
+msgctxt "#33064"
+msgid "Rendering: {}"
+msgstr "Rendere: {}"
+
+msgctxt "#33065"
+msgid "Complete"
+msgstr "Fertig"
+
+msgctxt "#33066"
+msgid "Cache template files"
+msgstr "Templatedateien cachen"
+
+msgctxt "#33067"
+msgid "Doesn't throw away the template source files after compiling them. Uses slightly more memory but increases the speed of theme-related changes."
+msgstr "Wirft die Templatequelle nicht weg, nachdem das Template kompiliert wurde. Benutzt minimal mehr Arbeitsspeicher, aber erhöht die Geschwindigkeit Aussehen-spezifischer Änderungen."
+
+msgctxt "#33068"
+msgid "Always compile templates"
+msgstr "Templates immer kompilieren"
+
+msgctxt "#33069"
+msgid "Recompiles all templates on every startup. Useful for template/theme development."
+msgstr "Rekompiliere alle Templates bei jedem Start. Nützlich für Template/Aussehen-Entwicklung."
+
+msgctxt "#33070"
+msgid "Action on Wake event"
+msgstr "Aktion bei Wake-Ereignis"
+
+msgctxt "#33071"
+msgid "Restart PM4K"
+msgstr "PM4K neustarten"
+
+msgctxt "#33072"
+msgid "Wait for {} seconds"
+msgstr "Warten für {}s"
+
+msgctxt "#33073"
+msgid "Wait after wakeup"
+msgstr "Warte nach Aufwachen"
+
+msgctxt "#33074"
+msgid "Waiting {} second(s)"
+msgstr "Warte {} Sekunde(n)"
+
+msgctxt "#33075"
+msgid "Wait for a time until resuming normal execution. Helps with networks coming back up after sleep events. Default: 1 second (5 seconds, CoreELEC)"
+msgstr "Warten, bis die normale Ausführung weiter geht. Hilft beim Aufwachen von Netzwerken nach Sleep-Ereignissen. Standard: 1 Sekunde (5 Sekunden, CoreELEC)"

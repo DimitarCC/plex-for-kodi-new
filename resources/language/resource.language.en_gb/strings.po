@@ -2049,3 +2049,59 @@ msgstr ""
 msgctxt "#33061"
 msgid "Enable certain codecs if your hardware supports them. Disable them to force transcoding."
 msgstr ""
+
+msgctxt "#33062"
+msgid "Compiling templates"
+msgstr ""
+
+msgctxt "#33063"
+msgid "Looking for custom templates"
+msgstr ""
+
+msgctxt "#33064"
+msgid "Rendering: {}"
+msgstr ""
+
+msgctxt "#33065"
+msgid "Complete"
+msgstr ""
+
+msgctxt "#33066"
+msgid "Cache template files"
+msgstr ""
+
+msgctxt "#33067"
+msgid "Doesn't throw away the template source files after compiling them. Uses slightly more memory but increases the speed of theme-related changes."
+msgstr ""
+
+msgctxt "#33068"
+msgid "Always compile templates"
+msgstr ""
+
+msgctxt "#33069"
+msgid "Recompiles all templates on every startup. Useful for template/theme development."
+msgstr ""
+
+msgctxt "#33070"
+msgid "Action on Wake event"
+msgstr ""
+
+msgctxt "#33071"
+msgid "Restart PM4K"
+msgstr ""
+
+msgctxt "#33072"
+msgid "Wait for {}s"
+msgstr ""
+
+msgctxt "#33073"
+msgid "Wait after wakeup"
+msgstr ""
+
+msgctxt "#33074"
+msgid "Waiting {} second(s)"
+msgstr ""
+
+msgctxt "#33075"
+msgid "Wait for a time until resuming normal execution. Helps with networks coming back up after sleep events. Default: 1 second (5 seconds, CoreELEC)"
+msgstr ""

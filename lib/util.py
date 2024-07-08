@@ -876,17 +876,19 @@ def getPlatform():
 platform = getPlatform()
 
 
-def isCoreELEC():
+def getCoreELEC():
     try:
-        if platform in ['Linux', 'RaspberryPi']:
-            stdout = subprocess.check_output('lsb_release', shell=True).decode()
-            match = re.search(r'CoreELEC', stdout)
-            if match:
-                return True
+        stdout = subprocess.check_output('lsb_release', shell=True).decode()
+        match = re.search(r'CoreELEC', stdout)
+        if match:
+            return True
 
         return False
     except:
         return False
+
+
+isCoreELEC = getCoreELEC() if platform in ['Linux', 'RaspberryPi'] else False
 
 
 def getRunningAddons():
