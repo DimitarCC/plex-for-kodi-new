@@ -305,8 +305,9 @@ class LibrarySection(plexobjects.PlexObject):
         """
         # Cleanup the core arguments
         args = {}
-        for filter, value in filters.items():
-            args[filter] = value
+        if filters is not None:
+            for filter, value in filters.items():
+                args[filter] = value
         for category, value in kwargs.items():
             args[category] = self._cleanSearchFilter(category, value, libtype)
         if title is not None:
