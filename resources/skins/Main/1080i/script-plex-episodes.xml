@@ -35,18 +35,6 @@
                 <height>1080</height>
                 <texture background="true">script.plex/home/background-fallback.png</texture>
             </control>
-			
-			
-            <!--<control type="image">
-                <visible>String.IsEmpty(Window.Property(use_bg_fallback))</visible>
-                <posx>0</posx>
-                <posy>0</posy>
-                <width>2500</width>
-                <height>1080</height>
-                <fadetime>1000</fadetime>
-                <texture background="true">$INFO[Window.Property(background)]</texture>
-				<aspectratio scalediffuse="false" align="left" aligny="top">stretch</aspectratio>
-            </control>-->
 			<control type="image">
                 <visible>String.IsEmpty(Window.Property(use_bg_fallback))</visible>
                 <posx>-50</posx>
@@ -54,20 +42,9 @@
                 <width>6300</width>
                 <height>3600</height>
                 <fadetime>500</fadetime>
-                <texture background="true" diffuse="script.plex/blurdiff2.png">$INFO[Window.Property(background)]</texture>
+                <texture background="true">$INFO[Window.Property(background)]</texture>
 				<aspectratio scalediffuse="false" align="left" aligny="top">stretch</aspectratio>
             </control>
-			<!--<control type="image">
-				<visible>String.IsEmpty(Window.Property(use_bg_fallback))</visible>
-				<posx>0</posx>
-				<posy>-2500</posy>
-				<width>3600</width>
-				<height>4096</height>
-				<fadetime>1000</fadetime>
-				<texture background="true" diffuse="script.plex/blurdiff.png">$INFO[Window.Property(background)]</texture>
-				<aspectratio scalediffuse="false" align="left" aligny="bottom">stretch</aspectratio>
-			</control>-->
-		
 			<control type="image">
                 <visible>String.IsEmpty(Window.Property(use_bg_fallback))</visible>
                 <posx>0</posx>
@@ -86,12 +63,9 @@
                 <texture background="true">script.plex/noise_overlay3.png</texture>
             </control>
         </control>
-		
-		
-		
-		
+
 		<control type="group" id="52">
-			<animation effect="fade" start="100" end="0" delay="100" time="200" condition="!String.IsEmpty(Window.Property(on.extras)) + !Control.HasFocus(400) + !Control.HasFocus(201) + !Control.HasFocus(202)" reversible="true">conditional</animation>
+			<animation effect="fade" start="100" end="0" delay="100" time="200" condition="!String.IsEmpty(Window.Property(on.extras)) + !Control.HasFocus(400) + !Control.HasFocus(405) + !Control.HasFocus(201) + !Control.HasFocus(202)" reversible="true">conditional</animation>
 			<posx>640</posx>
 			<posy>0</posy>
 			<control type="image">
@@ -105,13 +79,13 @@
 		</control>
 	
         <control type="group" id="50">
-            <animation effect="slide" end="0,-220" time="200" delay="100" tween="quadratic" easing="in" reversible="true" condition="!String.IsEmpty(Window.Property(on.extras)) + !Control.HasFocus(400) + !Control.HasFocus(300) + !Control.HasFocus(1300) + !ControlGroup(200).HasFocus(0) + !Control.HasFocus(200) + !Control.HasFocus(50)">Conditional</animation>
+            <animation effect="slide" end="0,-220" time="200" delay="100" tween="quadratic" easing="in" condition="!String.IsEmpty(Window.Property(on.extras)) + !Control.HasFocus(400) + !Control.HasFocus(405) + !Control.HasFocus(300) + !Control.HasFocus(1300) + !ControlGroup(200).HasFocus(0) + !Control.HasFocus(200) + !Control.HasFocus(50)  + !Control.HasFocus(202)  + !Control.HasFocus(201)">Conditional</animation>
 
-            <animation type="Conditional" condition="Integer.IsGreater(Window.Property(hub.focus),0) + Control.IsVisible(500)" reversible="true">
+            <animation type="Conditional" condition="Integer.IsGreater(Window.Property(hub.focus),0) + Control.IsVisible(500) + !Control.HasFocus(405) + !Control.HasFocus(300) + !Control.HasFocus(1300) + !String.IsEmpty(Window.Property(on.extras)) + !Control.HasFocus(202)  + !Control.HasFocus(201)" reversible="true">
                 <effect type="slide" end="0,-500" time="200" delay="100" tween="quadratic" easing="in"/>
             </animation>
 
-            <animation type="Conditional" condition="Integer.IsGreater(Window.Property(hub.focus),1) + Control.IsVisible(501)" reversible="true">
+            <animation type="Conditional" condition="Integer.IsGreater(Window.Property(hub.focus),1) + Control.IsVisible(501) + !Control.HasFocus(405) + !Control.HasFocus(300) + !Control.HasFocus(1300) + !String.IsEmpty(Window.Property(on.extras))  + !Control.HasFocus(202)  + !Control.HasFocus(201)" reversible="true">
                 <effect type="slide" end="0,-350" time="200" delay="100" tween="quadratic" easing="in"/>
             </animation>
 
@@ -119,7 +93,7 @@
                 <effect type="slide" end="0,-100" time="200" delay="100" tween="quadratic" easing="in"/>
             </animation>-->
 
-            <animation type="Conditional" condition="Integer.IsGreater(Window.Property(hub.focus),3) + Control.IsVisible(503)" reversible="true">
+            <animation type="Conditional" condition="Integer.IsGreater(Window.Property(hub.focus),3) + Control.IsVisible(503) + !Control.HasFocus(405) + !Control.HasFocus(300) + !Control.HasFocus(1300) + !String.IsEmpty(Window.Property(on.extras))  + !Control.HasFocus(202)  + !Control.HasFocus(201)" reversible="true">
                 <effect type="slide" end="0,-100" time="200" delay="100" tween="quadratic" easing="in"/>
             </animation>
 
@@ -127,17 +101,95 @@
             <posy>155</posy>
             <defaultcontrol>101</defaultcontrol>
 			
-			
-			
-			<!--<control type="image">
-				<posx>0</posx>
-				<posy>-190</posy>
-				<width>1920</width>
-				<height>1080</height>
-				<texture background="true" diffuse="script.plex/artdiff2.png">$INFO[Window.Property(background_static)]</texture>
-				<aspectratio>scale</aspectratio>
-			</control>-->
-			
+			<control type="list" id="405">
+				<visible>!String.IsEmpty(Window.Property(initialized)) + Integer.IsGreater(Container(405).NumItems,1) + String.IsEmpty(Window.Property(drawing))</visible>
+				<posx>300</posx>
+				<posy>-135</posy>
+				<width>750</width>
+				<height>75</height>
+				<ondown>300</ondown>
+				<onleft>202</onleft>
+				<scrolltime>200</scrolltime>
+				<orientation>horizontal</orientation>
+				<preloaditems>4</preloaditems>
+				<!-- ITEM LAYOUT ########################################## -->
+				<itemlayout width="150">
+					<control type="group">
+						<posx>0</posx>
+						<posy>0</posy>
+						<control type="group">
+							<control type="group">
+								<visible>!String.IsEmpty(ListItem.Property(selected))</visible>
+								<control type="image">
+									<posx>10</posx>
+									<posy>60</posy>
+									<width>130</width>
+									<height>5</height>
+									<texture>script.plex/white-square.png</texture>
+									<colordiffuse>FFCC7B19</colordiffuse>
+								</control>
+							</control>
+							<control type="label">
+								<scroll>false</scroll>
+								<posx>0</posx>
+								<posy>30</posy>
+								<width>150</width>
+								<height>54</height>
+								<font>font10</font>
+								<align>center</align>
+								<textcolor>FFFFFFFF</textcolor>
+								<label>$INFO[ListItem.Label]</label>
+							</control>
+						</control>
+					</control>
+				</itemlayout>
+
+				<!-- FOCUSED LAYOUT ####################################### -->
+				<focusedlayout width="150">
+					<control type="group">
+						<posx>0</posx>
+						<posy>0</posy>
+						<control type="group">
+							<posx>0</posx>
+							<posy>22</posy>
+							<control type="group">
+								<visible>!String.IsEmpty(ListItem.Property(selected))</visible>
+								<control type="image">
+									<posx>10</posx>
+									<posy>40</posy>
+									<width>130</width>
+									<height>5</height>
+									<texture>script.plex/white-square.png</texture>
+									<colordiffuse>FFCC7B19</colordiffuse>
+								</control>
+							</control>
+							<control type="button">
+								<width>150</width>
+								<height>45</height>
+								<font>font10</font>
+								<align>center</align>
+								<textcolor>FFFFFFFF</textcolor>
+								<focusedcolor>FFFFFFFF</focusedcolor>
+								<texturefocus colordiffuse="FFD85600" border="10">script.plex/white-square-rounded.png</texturefocus>
+								<texturenofocus colordiffuse="00E5A00D" border="10">script.plex/white-square-rounded.png</texturenofocus>
+								<label> </label>
+							</control>
+							<control type="label">
+								<scroll>false</scroll>
+								<posx>0</posx>
+								<posy>8</posy>
+								<width>150</width>
+								<height>54</height>
+								<font>font10</font>
+								<align>center</align>
+								<textcolor>FFFFFFFF</textcolor>
+								<label>$INFO[ListItem.Label]</label>
+							</control>
+						</control>
+					</control>
+				</focusedlayout>
+			</control>
+
 			<control type="group" id="200">
 				<!--<animation effect="fade" start="100" end="0" delay="200" time="100" condition="!String.IsEmpty(Window.Property(on.extras)) + !Control.HasFocus(400) + !Control.HasFocus(200)" reversible="true">conditional</animation>-->
 				<defaultcontrol always="true">201</defaultcontrol>
@@ -189,7 +241,7 @@
 							<animation effect="zoom" start="177" end="100" time="100" center="20,20" reversible="false">UnFocus</animation>
 							<width>40</width>
 							<height>40</height>
-							<onright>204</onright>
+							<onright>405</onright>
 							<onleft>201</onleft>
 							<ondown>300</ondown>
 							<font>font12</font>
@@ -323,7 +375,7 @@
                 <posy>405</posy>
                 <width>717</width>
                 <height>200</height>
-                <onup>200</onup>
+                <onup>405</onup>
                 <ondown>400</ondown>
                 <align>center</align>
                 <itemgap>-50</itemgap>
@@ -421,7 +473,7 @@
                 <posy>412.5</posy>
                 <width>717</width>
                 <height>200</height>
-                <onup>200</onup>
+                <onup>405</onup>
                 <ondown>400</ondown>
                 <align>center</align>
                 <itemgap>-50</itemgap>
@@ -517,58 +569,11 @@
             </control>
 
             <control type="group">
+				<visible>!String.IsEmpty(Window.Property(initialized))</visible>
                 <posx>-30</posx>
                 <posy>0</posy>
                 <width>1920</width>
                 <height>600</height>
-                <!--<control type="group">
-                    <control type="image">
-                        <posx>60</posx>
-                        <posy>0</posy>
-                        <width>657</width>
-                        <height>393</height>
-                        <texture background="true">script.plex/thumb_fallbacks/show.png</texture>
-                        <animation effect="fade" start="0" end="100" time="0" delay="500">WindowOpen</animation>
-                        <aspectratio>scale</aspectratio>
-                    </control>
-                    <control type="image">
-                        <posx>60</posx>
-                        <posy>0</posy>
-                        <width>657</width>
-                        <height>393</height>
-                        <texture background="true">$INFO[Container(400).ListItem.Thumb]</texture>
-                        <aspectratio>scale</aspectratio>
-                    </control>
-                    <control type="image">
-                        <visible>String.IsEmpty(Window.Property(use_alt_watched)) + !String.IsEmpty(Container(400).ListItem.Property(unwatched)) + String.IsEmpty(Container(400).ListItem.Property(watched))</visible>
-                        <posx>682</posx>
-                        <posy>0</posy>
-                        <width>35</width>
-                        <height>35</height>
-                        <texture fallback="script.plex/indicators/unwatched.png">special://profile/addon_data/script.plexmod/media/unwatched.png</texture>
-                    </control>
-                    <control type="group">
-                        <visible>!String.IsEmpty(Window.Property(use_alt_watched)) + !String.IsEmpty(Container(400).ListItem.Property(watched))</visible>
-                        <posx>667</posx>
-                        <posy>0</posy>
-                        <control type="image">
-                            <posx>0</posx>
-                            <posy>0</posy>
-                            <width>50</width>
-                            <height>40</height>
-                            <visible>String.IsEmpty(Window.Property(hide_aw_bg))</visible>
-                            <texture>script.plex/white-square-bl-rounded_w.png</texture>
-                            <colordiffuse>CC000000</colordiffuse>
-                        </control>
-                        <control type="image">
-                            <posx>17</posx>
-                            <posy>12</posy>
-                            <width>16</width>
-                            <height>16</height>
-                            <texture fallback="script.plex/indicators/watched.png">special://profile/addon_data/script.plexmod/media/watched.png</texture>
-                        </control>
-                    </control>
-                </control>-->
 
                 <control type="grouplist">
                     <posx>86</posx>

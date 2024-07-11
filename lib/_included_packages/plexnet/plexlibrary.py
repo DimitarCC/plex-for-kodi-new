@@ -276,7 +276,7 @@ class LibrarySection(plexobjects.PlexObject):
 
         return plexobjects.listItems(self.server, query, bytag=True)
 
-    def search(self, title=None, sort=None, maxresults=999999, libtype=None, **kwargs):
+    def search(self, title=None, sort=None, maxresults=999999, libtype=None, filters=None, **kwargs):
         """ Search the library. If there are many results, they will be fetched from the server
             in batches of X_PLEX_CONTAINER_SIZE amounts. If you're only looking for the first <num>
             results, it would be wise to set the maxresults option to that amount so this functions
@@ -305,6 +305,8 @@ class LibrarySection(plexobjects.PlexObject):
         """
         # Cleanup the core arguments
         args = {}
+        for filter, value in filters.items():
+            args[filter] = value
         for category, value in kwargs.items():
             args[category] = self._cleanSearchFilter(category, value, libtype)
         if title is not None:
@@ -374,7 +376,7 @@ class LibrarySection(plexobjects.PlexObject):
 class MovieSection(LibrarySection):
     ALLOWED_FILTERS = (
         'unwatched', 'duplicate', 'year', 'decade', 'genre', 'contentRating', 'collection',
-        'director', 'actor', 'country', 'studio', 'resolution'
+        'director', 'actor', 'country', 'studio', 'resolution', 'guid', "id!"
     )
     ALLOWED_SORT = (
         'addedAt', 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating', 'audienceRating', 'userRating',
