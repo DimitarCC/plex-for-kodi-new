@@ -193,16 +193,22 @@ class BaseWindow(xbmcgui.WindowXML, BaseFunctions):
     def updateBackgroundFrom(self, ds):
         if util.addonSettings.dynamicBackgrounds:
             return self.windowSetBackground(util.backgroundFromArt(ds.art, width=self.width,
+                                                                   height=self.height), util.backgroundFromArtNoBlur(ds.art, width=self.width,
                                                                    height=self.height))
 
-    def windowSetBackground(self, value):
+    def windowSetBackground(self, value, valueArt=None):
         if not util.addonSettings.dbgCrossfade:
             if not value:
                 return
             self.setProperty("background_static", value)
+            if valueArt:
+                self.setProperty("background_art", valueArt)
             return value
 
         global LAST_BG_URL
+
+        if valueArt:
+            self.setProperty("background_art", valueArt)
 
         if not value:
             bg = LAST_BG_URL or BG_NA
@@ -214,6 +220,8 @@ class BaseWindow(xbmcgui.WindowXML, BaseFunctions):
         cur1 = self.getProperty('background')
         if not cur1:
             self.setProperty("background_static", value)
+            if valueArt:
+                self.setProperty("background_art", valueArt)
             self.setProperty("background", value)
 
         elif LAST_BG_URL != value:

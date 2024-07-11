@@ -45,7 +45,8 @@ class PrePlayWindow(kodigui.ControlledWindow, windowutils.UtilMixin, RatingsMixi
     ROLES_LIST_ID = 400
     REVIEWS_LIST_ID = 401
     EXTRA_LIST_ID = 402
-    RELATED_LIST_ID = 403
+    RELATED_LIST_ID = 404
+    EDITIONS_LIST_ID = 403
 
     OPTIONS_GROUP_ID = 200
     PROGRESS_IMAGE_ID = 250
@@ -83,6 +84,7 @@ class PrePlayWindow(kodigui.ControlledWindow, windowutils.UtilMixin, RatingsMixi
         self.extraListControl = kodigui.ManagedControlList(self, self.EXTRA_LIST_ID, 5)
         self.relatedListControl = kodigui.ManagedControlList(self, self.RELATED_LIST_ID, 5)
         self.rolesListControl = kodigui.ManagedControlList(self, self.ROLES_LIST_ID, 5)
+        self.editionsListControl = kodigui.ManagedControlList(self, self.EDITIONS_LIST_ID, 5)
         self.reviewsListControl = kodigui.ManagedControlList(self, self.REVIEWS_LIST_ID, 5)
 
         self.progressImageControl = self.getControl(self.PROGRESS_IMAGE_ID)
@@ -156,8 +158,12 @@ class PrePlayWindow(kodigui.ControlledWindow, windowutils.UtilMixin, RatingsMixi
 
             elif action == xbmcgui.ACTION_MOVE_UP and controlID in (self.REVIEWS_LIST_ID,
                                                                     self.ROLES_LIST_ID,
-                                                                    self.EXTRA_LIST_ID):
+                                                                    self.EXTRA_LIST_ID,
+                                                                    self.EDITIONS_LIST_ID):
                 self.updateBackgroundFrom(self.video)
+
+            if controlID == self.EDITIONS_LIST_ID and action in (xbmcgui.ACTION_MOVE_LEFT, xbmcgui.ACTION_MOVE_RIGHT):
+                self.updateBackgroundFrom(self.editionsListControl.getSelectedItem().dataSource)
 
             if controlID == self.RELATED_LIST_ID:
                 if self.relatedPaginator.boundaryHit:
@@ -177,6 +183,8 @@ class PrePlayWindow(kodigui.ControlledWindow, windowutils.UtilMixin, RatingsMixi
             self.openItem(self.extraListControl)
         elif controlID == self.RELATED_LIST_ID:
             self.openItem(self.relatedListControl)
+        elif controlID == self.EDITIONS_LIST_ID:
+            self.openItem(self.editionsListControl)
         elif controlID == self.ROLES_LIST_ID:
             self.roleClicked()
         elif controlID == self.PLAY_BUTTON_ID:
@@ -204,6 +212,9 @@ class PrePlayWindow(kodigui.ControlledWindow, windowutils.UtilMixin, RatingsMixi
 
             if controlID == self.RELATED_LIST_ID:
                 self.updateBackgroundFrom(self.relatedListControl.getSelectedItem().dataSource)
+
+            if controlID == self.EDITIONS_LIST_ID:
+                self.updateBackgroundFrom(self.editionsListControl.getSelectedItem().dataSource)
 
         if xbmc.getCondVisibility('ControlGroup(50).HasFocus(0) + ControlGroup(300).HasFocus(0)'):
             self.setProperty('on.extras', '')
@@ -522,7 +533,8 @@ class PrePlayWindow(kodigui.ControlledWindow, windowutils.UtilMixin, RatingsMixi
         hasRoles = self.fillRoles()
         hasReviews = self.fillReviews()
         hasExtras = self.fillExtras()
-        self.fillRelated(hasRoles and not hasExtras and not hasReviews)
+        hasEditions = self.fillEditions(hasRoles and not hasExtras and not hasReviews)
+        self.fillRelated(hasRoles and not hasExtras and not hasReviews and not hasEditions)
 
     def setInfo(self, skip_bg=False):
         if not skip_bg:
@@ -551,6 +563,7 @@ class PrePlayWindow(kodigui.ControlledWindow, windowutils.UtilMixin, RatingsMixi
             self.setProperty('related.header', T(32306, 'Related Shows'))
         elif self.video.type == 'movie':
             self.setProperty('title', self.video.defaultTitle)
+            self.setProperty('edition', self.video.defaultEdition)
             self.setProperty('preview', '')
             self.setProperty('thumb', self.video.thumb.asTranscodedImageURL(*self.THUMB_POSTER_DIM))
             genres = u' / '.join([g.tag for g in self.video.genres()][:3])
@@ -562,6 +575,7 @@ class PrePlayWindow(kodigui.ControlledWindow, windowutils.UtilMixin, RatingsMixi
             castLabel = 'CAST'
             self.setProperty('cast', cast and u'{0}    {1}'.format(castLabel, cast) or '')
             self.setProperty('related.header', T(32404, 'Related Movies'))
+            self.setProperty('editions.header', T(33701, 'Other Editions'))
 
         self.setProperty('video.res', self.video.resolutionString())
         self.setProperty('audio.codec', self.video.audioCodecString())
@@ -651,6 +665,32 @@ class PrePlayWindow(kodigui.ControlledWindow, windowutils.UtilMixin, RatingsMixi
         self.setProperty('divider.{0}'.format(self.EXTRA_LIST_ID), has_prev and '1' or '')
 
         return True
+    
+    def fillEditions(self, has_prev=False):
+        items = []
+        idx = 0
+        if not self.video.editions:
+            self.editionsListControl.reset()
+            return False
+
+        for edition in self.video.editions:
+            mli = kodigui.ManagedListItem(edition.title or '', edition.editionTitle or '', thumbnailImage=edition.thumb.asTranscodedImageURL(*self.RELATED_DIM), data_source=edition)
+            mli.setProperty('unwatched', not edition.isWatched and '1' or '')
+            mli.setBoolProperty('watched', edition.isFullyWatched)
+            mli.setProperty('progress', util.getProgressImage(edition))
+            mli.setProperty('index', str(idx))
+            items.append(mli)
+            idx += 1
+
+        if not items:
+            return False
+        
+        self.setProperty('divider.{0}'.format(self.EDITIONS_LIST_ID), has_prev and '1' or '')
+
+        self.editionsListControl.reset()
+        self.editionsListControl.addItems(items)
+        return True
+
 
     def fillRelated(self, has_prev=False):
         if not self.relatedPaginator.leafCount:

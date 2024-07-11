@@ -954,6 +954,16 @@ def backgroundFromArt(art, width=1920, height=1080, background=colors.noAlpha.Ba
         background=background
     )
 
+def backgroundFromArtNoBlur(art, width=1920, height=1080, background=colors.noAlpha.Background):
+    if not art:
+        return
+    return art.asTranscodedImageURL(
+        width, height,
+        blur=0,
+        opacity=100,
+        background=background
+    )
+
 
 def trackIsPlaying(track):
     return xbmc.getCondVisibility('String.StartsWith(MusicPlayer.Comment,{0})'.format('PLEX-{0}:'.format(track.ratingKey)))

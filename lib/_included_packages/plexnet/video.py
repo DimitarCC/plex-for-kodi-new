@@ -515,10 +515,13 @@ class Movie(PlayableVideo):
 
     @property
     def defaultTitle(self):
-        title = self.title or ''
+        return self.title or ''
+    
+    @property
+    def defaultEdition(self):
         if self.editionTitle:
-            title = title + " \u2022 " + self.editionTitle
-        return title
+            return self.editionTitle
+        return ''
 
     @property
     def maxHeight(self):
@@ -549,6 +552,17 @@ class Movie(PlayableVideo):
     @property
     def actors(self):
         return self.roles
+    
+    @property
+    def editions(self):
+        """ Returns a list of :class:`~plexapi.video.Movie` objects
+            for other editions of the same movie.
+        """
+        filters = {
+            'guid': self.guid,
+            'id!': self.ratingKey
+        }
+        return self.server.library.section('Movies').search(filters=filters)
 
     @property
     def isWatched(self):

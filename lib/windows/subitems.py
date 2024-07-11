@@ -247,6 +247,8 @@ class ShowWindow(kodigui.ControlledWindow, windowutils.UtilMixin, SeasonsMixin, 
             self.searchButtonClicked()
 
     def onFocus(self, controlID):
+        if self.lastFocusID and 399 < self.lastFocusID < 500:
+            self.setProperty('hub.prevfocus', str(self.lastFocusID - 400))
         self.lastFocusID = controlID
 
         if 399 < controlID < 500:
@@ -528,11 +530,11 @@ class ShowWindow(kodigui.ControlledWindow, windowutils.UtilMixin, SeasonsMixin, 
     def getRoleItemDDPosition(self):
         y = 980
         if xbmc.getCondVisibility('Control.IsVisible(500)'):
-            y += 380
+            y += 350
         if xbmc.getCondVisibility('!String.IsEmpty(Window.Property(on.extras))'):
             y -= 200
         if xbmc.getCondVisibility('Integer.IsGreater(Window.Property(hub.focus),0) + Control.IsVisible(500)'):
-            y -= 500
+            y -= 460
 
         focus = int(xbmc.getInfoLabel('Container(401).Position'))
 
