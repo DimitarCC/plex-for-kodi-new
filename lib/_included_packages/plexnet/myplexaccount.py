@@ -111,9 +111,15 @@ class MyPlexAccount(object):
                 self.lastHomeUserUpdate = obj.get('lastHomeUserUpdate')
                 if self.cacheHomeUsers:
                     self.homeUsers = [HomeUser(data) for data in obj.get('homeUsers', [])]
+                    self.setAdminByCHU()
                 if self.homeUsers:
                     util.LOG("cached home users: {0} (last update: {1})".format(self.homeUsers,
                                                                                 self.lastHomeUserUpdate))
+
+    def setAdminByCHU(self):
+        for user in self.homeUsers:
+            if user.id == self.ID:
+                self.isAdmin = user.isAdmin
 
     def verifyAccount(self):
         if self.authToken:
@@ -196,6 +202,9 @@ class MyPlexAccount(object):
                     "Skipping home user update (updated {0} seconds ago)".format(epoch - self.lastHomeUserUpdate))
             else:
                 self.updateHomeUsers(use_async=bool(self.homeUsers))
+
+            if bool(self.homeUsers):
+                self.setAdminByCHU()
 
             # revalidate plex home subscription state after switching home user
             if self.revalidatePlexPass and self.homeUsers:

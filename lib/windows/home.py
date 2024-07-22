@@ -1176,6 +1176,11 @@ class HomeWindow(kodigui.BaseWindow, util.CronReceiver, SpoilersMixin):
 
         else:
             options = []
+            if plexapp.ACCOUNT.isAdmin and section != playlists_section:
+                options = [{'key': 'refresh', 'display': T(33082, "Scan Library Files")},
+                           {'key': 'emptyTrash', 'display': T(33083, "Empty Trash")},
+                           {'key': 'analyze', 'display': T(33084, "Analyze")},
+                           dropdown.SEPARATOR]
 
             if section.locations:
                 for loc in section.locations:
